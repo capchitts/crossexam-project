@@ -1,45 +1,48 @@
-# Step 1: one agent reads one paper
+# Step 2: three small fixes, no new component
 
-**The goal of this step:** the simplest thing that could work. Give a model a paper and a form, and see what comes back. No queue, no database, no checks, no screen.
+**What step 1 showed:** every paper was forced into the invoice form, nothing was remembered, and a stop lost everything. Look at the notes of step 1 first.
 
-**The use case:** shipments 0002 and 0010, nine files. Read the invoice of PO-40002: who is the supplier, what is the invoice number, which order is it for, what is the total?
+**The goal of this step:** fix those three things with the smallest possible change. Still one script, still no queue, no database, no screen.
 
 ## What is new
-| File | What it does |
-|---|---|
-| `ladder/step1_one_agent.py` | About 65 lines. A form (`Invoice`, four fields), one agent (`create_agent` with a model, no tools), and `read_file`, which turns a file into text or pictures the model can read. |
-
-An **agent** at this step is nothing more than a loop around a model that must return the form. There are no tools yet.
+`ladder/step2_three_small_fixes.py` is step 1 plus three small ideas:
+| Fix | In the code | Why |
+|---|---|---|
+| 1. Ask what kind of paper it is first | `Kind`, then one small form per kind (`Invoice`, `Shipping`, `Certificate`) | A certificate is not an invoice. The right form follows the kind. |
+| 2. Fingerprint every file | `hashlib.sha256(bytes)`, looked up before any call | The same bytes are never read twice. A repeat costs nothing. |
+| 3. Save each result as it arrives | one line per paper in `ladder/results.jsonl` | A stop no longer loses what was already read. |
 
 ## Run it
 ```bash
-./run.sh ladder/step1_one_agent.py demo-data/files/0002_bundle_scan.pdf
-./run.sh ladder/step1_one_agent.py $(ls demo-data/files/0002_* demo-data/files/0010_*)     # all nine
+rm -f ladder/results.jsonl                      # start clean
+./run.sh ladder/step2_three_small_fixes.py demo-data/files/0002_* demo-data/files/0010_*
+./run.sh ladder/step2_three_small_fixes.py demo-data/files/0002_* demo-data/files/0010_*     # again
 ```
 
 ## What you should see (a real run of this branch)
+First run (17 s for the whole command, two model calls per file):
 ```
-0002_bundle_scan.pdf     supplier_name='Deccan Hygiene Industries' invoice_number='SI/26-27/56132' po_number='PO-40002' total=700010.85   (2.0 s)
-0002_coa_1.pdf           supplier_name='Deccan Hygiene Industries' invoice_number='' po_number='' total=0   (0.7 s)
-0002_ewaybill.pdf        supplier_name='27UMYCJ2170J1ZQ' invoice_number='SI/26-27/56132' po_number='' total=700010.85   (1.1 s)
-0010_einvoice.json       supplier_name='Tungabhadra Detergents Ltd' invoice_number='SI/26-27/14044' po_number='PO-40010' total=92040.0   (0.8 s)
-0010_lr_scan.pdf         supplier_name='SOUTHERN CARGO MOVERS' invoice_number='SI/26-27/14044' po_number='' total=0   (1.5 s)
-... (nine lines in all; about 9 s of model time, about 14 s for the whole command)
+0002_bundle_scan.pdf     other        {}
+0002_coa_1.pdf           certificate  {'batch_number': 'B43J529', 'expiry_date': '11/09/2027', 'result': 'PASS'}
+0002_ewaybill.pdf        shipping     {'invoice_number': 'SI/26-27/56132', 'vehicle_number': 'KA28 JQ 4940'}
+0010_einvoice.json       invoice      {'supplier_name': 'Tungabhadra Detergents Ltd', 'invoice_number': 'SI/26-27/14044', 'po_number': 'PO-40010', 'total': 92040.0}
+0010_ewaybill.json       shipping     {'invoice_number': 'SI/26-27/14044', 'vehicle_number': 'KL19KI5987'}
+0010_lr_scan.pdf         shipping     {'invoice_number': 'SI/26-27/14044', 'vehicle_number': 'KL19 KI 5987'}
+... (nine lines)
 ```
-The three invoices are read exactly right, including PO-40002 and the total 700,010.85. Your timings and cost will differ a little. (Measured earlier on the same nine files with this script: about US$0.003, under a rupee.)
+Second run: **3.5 seconds for the whole command, every line ends `(skipped: seen before)`, no model call.**
 
 ## What to notice
-Look at the lines again before reading on.
-1. **A tax ID in the name field.** The e-way bill is not an invoice, but the agent had only the invoice form, so it forced the paper in: `supplier_name='27UMYCJ2170J1ZQ'`.
-2. **Quality certificates and lorry receipts get "invoice" fields.** `0010_lr_scan.pdf` has `supplier_name='SOUTHERN CARGO MOVERS'`, which is the transporter.
-3. **Nothing is kept.** The answers are printed and gone. Run it again and you pay again.
-4. **Nothing says what kind of paper it was.**
-
-Step 2 fixes these three things without adding a single new component.
+1. **Certificates, e-way bills and lorry receipts now get their own forms.** No tax ID in the name field any more.
+2. **The repeat run costs nothing.** The fingerprint is already in `results.jsonl`.
+3. **The bundle is still wrong.** `0002_bundle_scan.pdf` is *three papers in one scan* (an invoice, a packing list and a lorry receipt) but it got one kind and one form. In this run the kind was `other` and the invoice of PO-40002 was lost. In other runs the same file came back as `invoice`. The model is not a function: the same file can give a different answer.
+4. **Saving the answer saves the wrong answer too.** The second run faithfully returns `other {}`. A cache is only as good as what it caches.
+5. **One lorry, written two ways.** `KL19KI5987` (the e-way bill) and `KL19 KI 5987` (the lorry receipt) are the same vehicle. Nothing compares them.
+6. **Nothing compares the invoice with the order.** The agent copied what is printed. It cannot say the supplier asked too much.
 
 ## Questions people ask
-- **Why not add a database, a queue and a screen right now?** Because nothing so far has asked for one. The first version is fast and cheap. A new part must earn its place by fixing something we can see.
-- **Why LangChain `create_agent` for something this simple?** It is the same building block the real system uses, so nothing is thrown away later.
-- **Is the model right?** On the invoices, yes. On the other papers it answers a question that does not apply to them. That is the lesson of step 2.
+- **Why not retry until the bundle comes back as an invoice?** A retry that "works" this time proves nothing next time. The fix is to split the bundle into its papers, one form each.
+- **Is a fingerprint the same as a filename?** No. A filename can change; the bytes decide. One extra space gives a different fingerprint.
+- **Is `results.jsonl` a database?** It is one line of JSON per paper, in a file. It is enough for one person on one laptop, and that is exactly the next problem.
 
-Next: `git switch build/step-2-three-fixes`
+Next: `git switch build/step-3-plain-code`
