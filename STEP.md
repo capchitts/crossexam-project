@@ -53,3 +53,40 @@ First run 12 seconds for the whole command; second run 2 seconds.
 **Notice:** the three-paper scan is now three papers, and the invoice of PO-40002 is back. **What is AI here and what is not:** the model only copies a page into text. *Where a paper ends* is a rule you can read in `title_kind` and `split_papers`. (The full system asks a model to propose the split, then repairs it with code. Plain rules are enough for these papers and give the same answer every run.)
 
 **A doubt worth saying out loud:** *"What if a bundle has a page with no title and no continuation?"* It joins the paper before it, or becomes `other` if it is the first. That is a rule you chose, so you can change it and rerun for free.
+
+---
+
+## 3c. Fill one form per paper, check it with code (`git checkout build/step-3c-check`)
+For each paper the model fills the matching form (the same forms the full system uses, in `app/schemas.py`). The answer is saved, so a second run is free and identical. Government JSON is copied by code and needs no model. Then **plain code** checks every form with `validate` (`app/rules/validation.py`): required fields, a valid tax ID check digit, each line, the subtotal, the tax, the total.
+```bash
+./run.sh ladder/step3/c_check.py        # first run: one model call per paper that is not government JSON
+./run.sh ladder/step3/c_check.py        # again: every line says "saved", nothing is called
+```
+```
+0002_bundle_scan.pdf   model  invoice SI/26-27/56132  PO PO-40002  total 700010.85           checks: ok
+0002_bundle_scan.pdf   model  packing list PL-29901  for invoice SI/26-27/56132              checks: ok
+0002_bundle_scan.pdf   model  lorry receipt LR561504  vehicle KA28 JQ 4940                   checks: ok
+0002_ewaybill.pdf      model  e-way bill 742795434833  vehicle KA28 JQ 4940                  checks: ok
+0010_einvoice.json     code   invoice SI/26-27/14044  PO PO-40010  total 92040.0             checks: ok
+0010_ewaybill.json     code   e-way bill 394144262876  vehicle KL19KI5987                    checks: ok
+0010_lr_scan.pdf       model  lorry receipt LR587234  vehicle KL19 KI 5987                   checks: ok
+...  (eleven papers from nine files)
+```
+First run 15 seconds for the whole command; second run 3 seconds. Eleven papers, all checks ok.
+
+**See what the checks catch.** Pretend the model read every invoice total 1,000 too high (no model is called):
+```bash
+./run.sh ladder/step3/c_check.py --misread
+```
+```
+0002_bundle_scan.pdf   saved  invoice SI/26-27/56132  PO PO-40002  total 701010.85           checks: ['total_mismatch']
+0010_einvoice.json     code   invoice SI/26-27/14044  PO PO-40010  total 93040.0             checks: ['total_mismatch']
+```
+**Notice:** subtotal plus tax no longer equals the total, so code names the check that failed. Exact, free, and explainable.
+
+**What the checks do not catch.** Pretend PO-40002 was read as `PQ-40002`:
+```bash
+./run.sh ladder/step3/c_check.py --bad-po
+```
+`checks: ok`. Nothing looks at the PO number. Plain code only catches what someone wrote a rule for.
+**Try it:** in `app/rules/validation.py`, function `_invoice`, add one check so that a PO number that is not `PO-` and five digits gives `invalid:po_number`. In this repository `run.sh` mounts the whole folder, so your edit is used straight away. Run `--bad-po` again. (`git restore app/rules/validation.py` undoes it.)
