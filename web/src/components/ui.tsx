@@ -28,7 +28,7 @@ export function GradientText({
   const t = theme ?? pageTheme;
   const scheme = useScheme();
   return (
-    <span className={cn("text-gradient", !plain && "font-serif font-normal italic", className)} style={{ ["--tg" as string]: scheme === "light" ? t.cssLight : t.css }}>
+    <span className={cn("text-gradient", plain && "", className)} style={{ ["--tg" as string]: scheme === "light" ? t.cssLight : t.css }}>
       {children}
     </span>
   );
@@ -51,7 +51,7 @@ export function Card({
   action?: ReactNode;
 }) {
   return (
-    <section className={cn("glass min-w-0 rounded-3xl p-5 sm:p-6", className)}>
+    <section className={cn("glass min-w-0 rounded-lg p-5 sm:p-6", className)}>
       {(title || action) && (
         <header className="mb-4 flex items-start justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
@@ -72,28 +72,19 @@ export function Card({
 export function IconBadge({
   icon: Icon,
   size = "md",
-  gradient,
   className,
 }: {
   icon: LucideIcon;
   size?: "sm" | "md" | "lg";
+  /** kept so existing call sites compile; the badge is one flat colour now */
   gradient?: string;
   className?: string;
 }) {
-  const theme = usePageTheme();
-  const dims = { sm: "size-8 rounded-xl", md: "size-11 rounded-2xl", lg: "size-14 rounded-2xl" }[size];
-  const icon = { sm: "size-4", md: "size-5", lg: "size-7" }[size];
+  const dims = { sm: "size-8 rounded-md", md: "size-10 rounded-md", lg: "size-12 rounded-lg" }[size];
+  const icon = { sm: "size-4", md: "size-5", lg: "size-6" }[size];
   return (
-    <span
-      className={cn(
-        "grid shrink-0 place-items-center bg-linear-to-br text-white shadow-lg",
-        gradient ?? theme.gradient,
-        theme.glow,
-        dims,
-        className,
-      )}
-    >
-      <Icon className={icon} strokeWidth={2.2} />
+    <span className={cn("grid shrink-0 place-items-center bg-blue-50 text-blue-700 ring-1 ring-blue-100 ring-inset", dims, className)}>
+      <Icon className={icon} strokeWidth={2} />
     </span>
   );
 }
@@ -114,7 +105,7 @@ export function Pill({
     <span
       title={title}
       className={cn(
-        "inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset",
+        "inline-flex max-w-full items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset",
         className ?? "bg-sunk text-ink-2 ring-line",
       )}
     >
@@ -158,22 +149,21 @@ interface ButtonLook {
   gradient?: string;
 }
 
-function useButtonClass({ variant = "primary", size = "md", gradient }: ButtonLook, className?: string) {
-  const theme = usePageTheme();
+function useButtonClass({ variant = "primary", size = "md" }: ButtonLook, className?: string) {
   const sizes = {
-    sm: "h-8 gap-1.5 rounded-xl px-3 text-[13px]",
-    md: "h-10 gap-2 rounded-xl px-4 text-sm",
-    lg: "h-12 gap-2.5 rounded-2xl px-6 text-[15px]",
+    sm: "h-8 gap-1.5 rounded-md px-3 text-[13px]",
+    md: "h-9 gap-2 rounded-md px-4 text-sm",
+    lg: "h-11 gap-2.5 rounded-md px-5 text-[15px]",
   }[size];
   const variants: Record<ButtonVariant, string> = {
-    primary: cn("bg-linear-to-r text-white shadow-lg hover:brightness-110", gradient ?? theme.gradient, theme.glow),
-    success: "bg-linear-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30 hover:brightness-110",
-    danger: "bg-linear-to-r from-rose-500 to-red-500 text-white shadow-lg shadow-rose-500/30 hover:brightness-110",
-    ghost: "glass text-ink hover:border-line-strong",
+    primary: "bg-blue-700 text-white hover:bg-blue-800",
+    success: "bg-emerald-600 text-white hover:bg-emerald-700",
+    danger: "bg-rose-600 text-white hover:bg-rose-700",
+    ghost: "border border-line-strong bg-white text-ink hover:bg-sunk",
     subtle: "bg-sunk text-ink-2 hover:bg-line hover:text-ink",
   };
   return cn(
-    "inline-flex select-none items-center justify-center font-semibold whitespace-nowrap transition-all duration-200 active:scale-[0.97] disabled:pointer-events-none disabled:opacity-45",
+    "inline-flex select-none items-center justify-center font-semibold whitespace-nowrap transition-colors duration-150 disabled:pointer-events-none disabled:opacity-45",
     sizes,
     variants[variant],
     className,
@@ -242,9 +232,8 @@ export function Segmented<T extends string>({
   className?: string;
   ariaLabel: string;
 }) {
-  const theme = usePageTheme();
   return (
-    <div role="radiogroup" aria-label={ariaLabel} className={cn("inline-flex gap-1 rounded-2xl bg-sunk p-1 ring-1 ring-inset ring-line", className)}>
+    <div role="radiogroup" aria-label={ariaLabel} className={cn("inline-flex gap-0.5 rounded-md bg-sunk p-0.5 ring-1 ring-inset ring-line", className)}>
       {options.map((o) => {
         const active = o.value === value;
         return (
@@ -255,10 +244,10 @@ export function Segmented<T extends string>({
             aria-checked={active}
             onClick={() => onChange(o.value)}
             className={cn(
-              "inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl font-semibold transition-all duration-200",
+              "inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded font-semibold transition-colors duration-150",
               size === "sm" ? "h-7 px-2.5 text-xs" : "h-9 px-3.5 text-[13px]",
               active
-                ? cn("bg-linear-to-r text-white shadow-md", o.gradient ?? theme.gradient)
+                ? "bg-blue-700 text-white"
                 : "text-ink-2 hover:bg-surface-2 hover:text-ink",
             )}
           >
@@ -273,7 +262,7 @@ export function Segmented<T extends string>({
 
 // ------------------------------------------------------------------ inputs
 export const inputClass =
-  "h-11 w-full rounded-xl border border-line bg-surface-2 px-3.5 text-sm text-ink placeholder:text-ink-3 outline-none transition focus:border-violet-400/70 focus:ring-4 focus:ring-violet-500/15";
+  "h-10 w-full rounded-md border border-line-strong bg-white px-3 text-sm text-ink placeholder:text-ink-3 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-600/20";
 
 export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
@@ -299,11 +288,8 @@ export function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center px-6 py-14 text-center">
-      <div className="relative mb-5">
-        <div className="absolute inset-0 scale-150 rounded-full bg-fuchsia-500/20 blur-2xl" />
-        <IconBadge icon={Icon} size="lg" className="relative" />
-      </div>
-      <h3 className="text-lg font-semibold tracking-tight text-ink">{title}</h3>
+      <IconBadge icon={Icon} size="lg" className="mb-4" />
+      <h3 className="text-base font-semibold tracking-tight text-ink">{title}</h3>
       {children && <p className="mt-1.5 max-w-md text-sm text-ink-3">{children}</p>}
       {action && <div className="mt-5">{action}</div>}
     </div>
@@ -313,8 +299,8 @@ export function EmptyState({
 export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () => void }) {
   const message = error instanceof Error ? error.message : String(error);
   return (
-    <div className="glass flex flex-col items-start gap-3 rounded-3xl border-rose-500/30! p-6 sm:flex-row sm:items-center">
-      <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-rose-500/15 text-rose-500">
+    <div className="glass flex flex-col items-start gap-3 rounded-lg border-rose-500/30! p-6 sm:flex-row sm:items-center">
+      <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-rose-500/15 text-rose-500">
         <AlertTriangle className="size-5" />
       </span>
       <div className="min-w-0 flex-1">

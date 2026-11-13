@@ -46,19 +46,19 @@ export const PACK_STATUS: Record<PackStatus, Tone> = {
   needs_review: {
     label: "Needs a person",
     icon: ShieldAlert,
-    pill: "bg-pink-400/15 text-pink-700 ring-pink-500/30 dark:text-pink-300",
+    pill: "bg-blue-400/15 text-blue-700 ring-blue-500/30 dark:text-blue-300",
     color: "#ec4899",
   },
   investigating: {
     label: "Agent investigating",
     icon: ScanSearch,
-    pill: "bg-violet-400/15 text-violet-700 ring-violet-500/30 dark:text-violet-300",
+    pill: "bg-blue-400/15 text-blue-700 ring-blue-500/30 dark:text-blue-300",
     color: "#8b5cf6",
   },
   open: {
     label: "Being checked",
     icon: CircleDashed,
-    pill: "bg-indigo-400/15 text-indigo-700 ring-indigo-500/30 dark:text-indigo-300",
+    pill: "bg-blue-400/15 text-blue-700 ring-blue-500/30 dark:text-blue-300",
     color: "#6366f1",
   },
   waiting_for_invoice: {
@@ -76,19 +76,19 @@ export const PACK_STATUS: Record<PackStatus, Tone> = {
   approved: {
     label: "Approved",
     icon: CircleCheckBig,
-    pill: "bg-teal-400/15 text-teal-700 ring-teal-500/30 dark:text-teal-300",
+    pill: "bg-blue-400/15 text-blue-700 ring-blue-500/30 dark:text-blue-300",
     color: "#14b8a6",
   },
   exported: {
     label: "Exported to ERP",
     icon: Send,
-    pill: "bg-sky-400/15 text-sky-700 ring-sky-500/30 dark:text-sky-300",
+    pill: "bg-blue-400/15 text-blue-700 ring-blue-500/30 dark:text-blue-300",
     color: "#0ea5e9",
   },
   rejected: {
     label: "Rejected",
     icon: Ban,
-    pill: "bg-orange-400/15 text-orange-700 ring-orange-500/30 dark:text-orange-300",
+    pill: "bg-amber-400/15 text-amber-700 ring-amber-500/30 dark:text-amber-300",
     color: "#f97316",
   },
   failed: {
@@ -122,18 +122,18 @@ export const DOC_STAGES: { key: DocStatus; label: string; color: string }[] = [
 export const DONE_STAGES: DocStatus[] = ["extracted", "split", "failed", "duplicate_file"];
 
 export const DOC_TYPES: Record<string, { label: string; icon: LucideIcon; gradient: string }> = {
-  invoice: { label: "Invoice", icon: Receipt, gradient: "from-violet-500 to-fuchsia-500" },
-  packing_list: { label: "Packing list", icon: Package, gradient: "from-sky-500 to-cyan-400" },
-  lorry_receipt: { label: "Lorry receipt", icon: Truck, gradient: "from-amber-500 to-orange-500" },
-  eway_bill: { label: "E-way bill", icon: Route, gradient: "from-emerald-500 to-teal-400" },
-  quality_certificate: { label: "Quality certificate", icon: BadgeCheck, gradient: "from-pink-500 to-rose-500" },
-  credit_note: { label: "Credit note", icon: ReceiptText, gradient: "from-indigo-500 to-blue-500" },
-  debit_note: { label: "Debit note", icon: ClipboardList, gradient: "from-rose-500 to-red-500" },
-  other: { label: "Other", icon: FileQuestion, gradient: "from-slate-500 to-slate-400" },
+  invoice: { label: "Invoice", icon: Receipt, gradient: "from-blue-700 to-blue-700" },
+  packing_list: { label: "Packing list", icon: Package, gradient: "from-blue-700 to-blue-700" },
+  lorry_receipt: { label: "Lorry receipt", icon: Truck, gradient: "from-blue-700 to-blue-700" },
+  eway_bill: { label: "E-way bill", icon: Route, gradient: "from-blue-700 to-blue-700" },
+  quality_certificate: { label: "Quality certificate", icon: BadgeCheck, gradient: "from-blue-700 to-blue-700" },
+  credit_note: { label: "Credit note", icon: ReceiptText, gradient: "from-blue-700 to-blue-700" },
+  debit_note: { label: "Debit note", icon: ClipboardList, gradient: "from-blue-700 to-blue-700" },
+  other: { label: "Other", icon: FileQuestion, gradient: "from-blue-700 to-blue-700" },
 };
 
 export function docType(type: string | null | undefined) {
-  return DOC_TYPES[type ?? ""] ?? { label: type ? type : "Unknown", icon: FileText, gradient: "from-slate-500 to-slate-400" };
+  return DOC_TYPES[type ?? ""] ?? { label: type ? type : "Unknown", icon: FileText, gradient: "from-blue-700 to-blue-700" };
 }
 
 export const PRIORITIES: Record<Priority, { label: string; hint: string; icon: LucideIcon; pill: string; active: string }> = {
@@ -142,21 +142,21 @@ export const PRIORITIES: Record<Priority, { label: string; hint: string; icon: L
     hint: "Jumps ahead of the month-end backlog",
     icon: Zap,
     pill: "bg-rose-400/15 text-rose-700 ring-rose-500/30 dark:text-rose-300",
-    active: "from-rose-500 to-orange-500",
+    active: "from-blue-700 to-blue-700",
   },
   normal: {
     label: "Normal",
     hint: "The everyday lane",
     icon: Layers,
-    pill: "bg-violet-400/15 text-violet-700 ring-violet-500/30 dark:text-violet-300",
-    active: "from-violet-500 to-fuchsia-500",
+    pill: "bg-blue-400/15 text-blue-700 ring-blue-500/30 dark:text-blue-300",
+    active: "from-blue-700 to-blue-700",
   },
   bulk: {
     label: "Bulk",
     hint: "Runs when there is spare capacity",
     icon: Copy,
-    pill: "bg-cyan-400/15 text-cyan-700 ring-cyan-500/30 dark:text-cyan-300",
-    active: "from-cyan-500 to-blue-500",
+    pill: "bg-blue-400/15 text-blue-700 ring-blue-500/30 dark:text-blue-300",
+    active: "from-blue-700 to-blue-700",
   },
 };
 
@@ -182,8 +182,8 @@ const FAMILY_PILL: Record<string, string> = {
   qty: "bg-amber-400/12 text-amber-800 ring-amber-500/25 dark:text-amber-200",
   money: "bg-rose-400/12 text-rose-800 ring-rose-500/25 dark:text-rose-200",
   risk: "bg-red-500/12 text-red-800 ring-red-500/30 dark:text-red-200",
-  quality: "bg-pink-400/12 text-pink-800 ring-pink-500/25 dark:text-pink-200",
-  other: "bg-indigo-400/12 text-indigo-800 ring-indigo-500/25 dark:text-indigo-200",
+  quality: "bg-blue-400/12 text-blue-800 ring-blue-500/25 dark:text-blue-200",
+  other: "bg-blue-400/12 text-blue-800 ring-blue-500/25 dark:text-blue-200",
 };
 
 export function issuePill(code: string): string {

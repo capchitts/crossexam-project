@@ -85,14 +85,14 @@ export function ReviewQueue() {
 
       {shown.length > 0 && rows.length > 0 && (
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <StatTile label="Packs in view" value={rows.length} icon={PackageOpen} gradient="from-amber-400 to-orange-500" />
-          <StatTile label="Billed" display={rupeesCompact(billed)} hint={rupees(billed)} icon={Landmark} gradient="from-violet-500 to-fuchsia-500" />
+          <StatTile label="Packs in view" value={rows.length} icon={PackageOpen} gradient="from-blue-700 to-blue-700" />
+          <StatTile label="Billed" display={rupeesCompact(billed)} hint={rupees(billed)} icon={Landmark} gradient="from-blue-700 to-blue-700" />
           <StatTile
             label="Held back by the match engine"
             display={rupeesCompact(Math.max(0, billed - payable))}
             hint="Billed minus what the papers support"
             icon={HandCoins}
-            gradient="from-rose-500 to-pink-500"
+            gradient="from-blue-700 to-blue-700"
           />
         </div>
       )}
@@ -118,7 +118,7 @@ export function ReviewQueue() {
           </EmptyState>
         </Card>
       ) : (
-        <div className="glass overflow-hidden rounded-3xl">
+        <div className="glass overflow-hidden rounded-lg">
           <div className="hidden grid-cols-[1.4fr_1.2fr_1.6fr_1fr_1fr_auto] gap-4 border-b border-line px-6 py-3 text-[11px] font-bold tracking-[0.12em] text-ink-3 uppercase lg:grid">
             <span>Shipment</span>
             <span>Status</span>

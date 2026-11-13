@@ -38,7 +38,7 @@ export function OriginalPaper({ doc }: { doc: PackDocument }) {
   const loading = kind === "sheet" ? sheet.isLoading : file.isLoading;
 
   return (
-    <div className="h-[640px] overflow-auto rounded-2xl bg-slate-200/70 p-3 ring-1 ring-line ring-inset dark:bg-black/30">
+    <div className="h-[640px] overflow-auto rounded-lg bg-slate-200/70 p-3 ring-1 ring-line ring-inset dark:bg-black/30">
       {failed ? (
         <PaperMessage icon={FileQuestion}>Original file unavailable.</PaperMessage>
       ) : loading ? (
@@ -54,7 +54,7 @@ export function OriginalPaper({ doc }: { doc: PackDocument }) {
       ) : kind === "sheet" && sheet.data ? (
         <div className="space-y-4">
           {sheet.data.sheets.map((s) => (
-            <div key={s.name} className="overflow-hidden rounded-xl bg-white shadow-xl">
+            <div key={s.name} className="overflow-hidden rounded-lg bg-white shadow-xl">
               <p className="border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-600">
                 Sheet: {s.name}
                 {s.truncated && " (first rows only)"}
@@ -110,7 +110,7 @@ function DownloadBlob({ blob, filename }: { blob: Blob; filename: string }) {
   const url = useObjectUrl(blob);
   return (
     <div className="grid h-full place-items-center">
-      <a href={url} download={filename} className="glass flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-ink">
+      <a href={url} download={filename} className="glass flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold text-ink">
         <Download className="size-4" />
         Download original
       </a>
@@ -230,7 +230,7 @@ export function FieldsPanel({ doc }: { doc: PackDocument }) {
           {t.label}
         </Pill>
         {doc.model && (
-          <Pill icon={Sparkles} className="bg-fuchsia-500/10 text-fuchsia-700 ring-fuchsia-500/25 dark:text-fuchsia-200" title="Model that read this document">
+          <Pill icon={Sparkles} className="bg-blue-500/10 text-blue-700 ring-blue-500/25 dark:text-blue-200" title="Model that read this document">
             {doc.model.startsWith("none:") ? `read by code (${doc.model.slice(5)})` : doc.model}
           </Pill>
         )}
@@ -260,7 +260,7 @@ export function FieldsPanel({ doc }: { doc: PackDocument }) {
             <div
               key={k}
               className={cn(
-                "rounded-xl bg-sunk px-3 py-2 ring-1 ring-inset",
+                "rounded-lg bg-sunk px-3 py-2 ring-1 ring-inset",
                 uncertain.includes(k) ? "ring-amber-500/50" : "ring-line",
               )}
             >
@@ -282,7 +282,7 @@ function ConfidenceMeter({ value }: { value: number }) {
   // The confidence gate sends anything under 0.80 to a person.
   const tone = value >= 0.9 ? "#10b981" : value >= 0.8 ? "#f59e0b" : "#f43f5e";
   return (
-    <div className="rounded-xl bg-sunk p-3 ring-1 ring-line ring-inset">
+    <div className="rounded-lg bg-sunk p-3 ring-1 ring-line ring-inset">
       <div className="flex items-center justify-between text-xs">
         <span className="font-semibold text-ink-2">Confidence</span>
         <span className="font-semibold text-ink tabular">{Math.round(value * 100)}%</span>
@@ -299,7 +299,7 @@ function ConfidenceMeter({ value }: { value: number }) {
 function LinesTable({ lines }: { lines: Record<string, unknown>[] }) {
   const cols = Array.from(new Set(lines.flatMap((l) => Object.keys(l))));
   return (
-    <div className="overflow-x-auto rounded-xl ring-1 ring-line ring-inset">
+    <div className="overflow-x-auto rounded-lg ring-1 ring-line ring-inset">
       <table className="w-full text-[13px]">
         <thead>
           <tr className="bg-sunk text-left text-[11px] font-semibold tracking-wide text-ink-3 uppercase">
@@ -330,11 +330,11 @@ export function Callout({ tone, icon: Icon, children }: { tone: "amber" | "rose"
   const tones = {
     amber: "bg-amber-500/10 text-amber-900 ring-amber-500/30 dark:text-amber-100",
     rose: "bg-rose-500/10 text-rose-900 ring-rose-500/30 dark:text-rose-100",
-    violet: "bg-violet-500/10 text-violet-900 ring-violet-500/30 dark:text-violet-100",
+    violet: "bg-blue-500/10 text-blue-900 ring-blue-500/30 dark:text-blue-100",
     red: "bg-red-500/12 text-red-900 ring-red-500/40 dark:text-red-100",
   };
   return (
-    <div className={cn("flex items-start gap-2.5 rounded-xl px-3.5 py-3 text-[13px] leading-relaxed ring-1 ring-inset", tones[tone])}>
+    <div className={cn("flex items-start gap-2.5 rounded-lg px-3.5 py-3 text-[13px] leading-relaxed ring-1 ring-inset", tones[tone])}>
       <Icon className="mt-0.5 size-4 shrink-0" />
       <div className="min-w-0">{children}</div>
     </div>
@@ -355,10 +355,10 @@ export function JsonView({ value, className }: { value: unknown; className?: str
       const tok = m[0];
       const cls = tok.startsWith('"')
         ? tok.trimEnd().endsWith(":")
-          ? "text-sky-300"
+          ? "text-blue-300"
           : "text-emerald-300"
         : /true|false|null/.test(tok)
-          ? "text-fuchsia-300"
+          ? "text-blue-300"
           : "text-amber-300";
       out.push(
         <span key={i} className={cls}>
@@ -371,7 +371,7 @@ export function JsonView({ value, className }: { value: unknown; className?: str
     return out;
   }, [text]);
   return (
-    <pre className={cn("overflow-auto rounded-xl bg-slate-950/90 p-4 font-mono text-[12px] leading-relaxed whitespace-pre-wrap text-slate-300 ring-1 ring-white/10", className)}>
+    <pre className={cn("overflow-auto rounded-lg bg-slate-950/90 p-4 font-mono text-[12px] leading-relaxed whitespace-pre-wrap text-slate-300 ring-1 ring-white/10", className)}>
       {parts}
     </pre>
   );

@@ -10,9 +10,9 @@ import { ago, humanize, rupees } from "../lib/format";
 import type { ExportResult, OutboxEmail } from "../lib/types";
 
 const GUARANTEES = [
-  { icon: CircleCheckBig, title: "Approved invoices only", text: "Approved by a person or by the match engine.", gradient: "from-emerald-400 to-teal-500" },
-  { icon: Repeat2, title: "Each invoice exactly once", text: "Running it twice is harmless: the second export is empty.", gradient: "from-teal-400 to-cyan-500" },
-  { icon: BotOff, title: "No agent can trigger it", text: "Export is plain code. It is not a tool any agent holds.", gradient: "from-cyan-400 to-sky-500" },
+  { icon: CircleCheckBig, title: "Approved invoices only", text: "Approved by a person or by the match engine.", gradient: "from-blue-700 to-blue-700" },
+  { icon: Repeat2, title: "Each invoice exactly once", text: "Running it twice is harmless: the second export is empty.", gradient: "from-blue-700 to-blue-700" },
+  { icon: BotOff, title: "No agent can trigger it", text: "Export is plain code. It is not a tool any agent holds.", gradient: "from-blue-700 to-blue-700" },
 ];
 
 export function ExportPage() {
@@ -47,10 +47,9 @@ export function ExportPage() {
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
         <div className="space-y-6">
           <section
-            className="glass gradient-border relative overflow-hidden rounded-[28px] p-6 sm:p-8"
-            style={{ ["--gb" as string]: "linear-gradient(120deg, #34d399, #2dd4bf 50%, #22d3ee)" }}
+            className="glass gradient-border relative overflow-hidden rounded-lg p-6 sm:p-8"
+            style={{ ["--gb" as string]: "linear-gradient(120deg, #10b981, #10b981 50%, #3b82f6)" }}
           >
-            <div className="pointer-events-none absolute -top-24 -right-20 size-72 rounded-full bg-emerald-500/20 blur-3xl" />
             <div className="relative flex items-start gap-4">
               <IconBadge icon={Lock} size="lg" />
               <div>
@@ -63,7 +62,7 @@ export function ExportPage() {
             </div>
             <div className="relative mt-6 grid gap-3 sm:grid-cols-3">
               {GUARANTEES.map((g) => (
-                <div key={g.title} className="rounded-2xl bg-sunk p-4 ring-1 ring-line ring-inset">
+                <div key={g.title} className="rounded-lg bg-sunk p-4 ring-1 ring-line ring-inset">
                   <IconBadge icon={g.icon} size="sm" gradient={g.gradient} />
                   <p className="mt-3 text-sm font-semibold text-ink">{g.title}</p>
                   <p className="mt-1 text-xs leading-relaxed text-ink-3">{g.text}</p>
@@ -151,7 +150,7 @@ function ExportOutcome({ result }: { result: ExportResult }) {
           </Button>
         }
       >
-        <div className="overflow-x-auto rounded-xl ring-1 ring-line ring-inset">
+        <div className="overflow-x-auto rounded-lg ring-1 ring-line ring-inset">
           <table className="w-full text-[13px]">
             <thead>
               <tr className="bg-sunk text-left text-[11px] font-semibold tracking-wide whitespace-nowrap text-ink-3 uppercase">
@@ -210,9 +209,9 @@ function Outbox() {
 function Email({ mail }: { mail: OutboxEmail }) {
   return (
     <li>
-      <details className="group rounded-2xl bg-sunk ring-1 ring-line ring-inset open:bg-surface-2">
+      <details className="group rounded-lg bg-sunk ring-1 ring-line ring-inset open:bg-surface-2">
         <summary className="flex cursor-pointer list-none items-start gap-3 p-3.5">
-          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-linear-to-br from-emerald-400 to-cyan-500 text-white">
+          <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-emerald-600 text-white">
             <Mail className="size-4" />
           </span>
           <span className="min-w-0 flex-1">

@@ -45,7 +45,7 @@ export function PackDetailPage() {
 
   return (
     <div>
-      <Link to={back} className="mb-6 inline-flex items-center gap-2 rounded-xl px-2 py-1 text-sm font-semibold text-ink-2 transition hover:bg-sunk hover:text-ink">
+      <Link to={back} className="mb-6 inline-flex items-center gap-2 rounded-lg px-2 py-1 text-sm font-semibold text-ink-2 transition hover:bg-sunk hover:text-ink">
         <ArrowLeft className="size-4" />
         Review queue
       </Link>
@@ -73,20 +73,18 @@ function PackView({ pack }: { pack: PackDetail }) {
   return (
     <div className="space-y-6">
       {/* ------------------------------------------------ header */}
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex items-start gap-4">
-          <span className="mt-1 hidden size-14 shrink-0 place-items-center rounded-[20px] bg-linear-to-br from-amber-400 via-orange-500 to-rose-500 text-white shadow-xl shadow-orange-500/40 sm:grid">
-            <tone.icon className="size-7" />
-          </span>
-          <div>
-            <p className="text-xs font-bold tracking-[0.18em] text-orange-600 uppercase dark:text-amber-300">Shipment pack</p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink sm:text-4xl">{pack.po_number ?? "No PO"}</h1>
-            <p className="mt-1.5 font-mono text-xs text-ink-3">
-              {pack.supplier_gstin ?? "unknown supplier"} · updated {ago(pack.updated_at)}
-            </p>
-          </div>
+      <header className="flex flex-col gap-4 border-b border-line pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="flex items-center gap-1.5 text-xs font-semibold tracking-[0.08em] text-blue-700 uppercase">
+            <tone.icon className="size-3.5" strokeWidth={2.2} />
+            Shipment pack
+          </p>
+          <h1 className="mt-1.5 text-[28px] leading-tight font-semibold tracking-tight text-ink">{pack.po_number ?? "No PO"}</h1>
+          <p className="mt-1 font-mono text-xs text-ink-3">
+            {pack.supplier_gstin ?? "unknown supplier"} · updated {ago(pack.updated_at)}
+          </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-3">
           <StatusPill status={pack.status} live={BUSY.includes(pack.status)} />
           <Link to={`/batches/${pack.batch_id}`} className="text-xs font-semibold text-ink-3 underline-offset-4 hover:text-ink hover:underline">
             View batch
@@ -102,10 +100,10 @@ function PackView({ pack }: { pack: PackDetail }) {
 
       {/* ------------------------------------------------ money */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatTile label="Billed" display={rupees(pack.invoice_total)} icon={Landmark} gradient="from-violet-500 to-fuchsia-500" />
-        <StatTile label="Match engine says pay" display={rupees(pack.payable_amount)} icon={Scale} gradient="from-emerald-400 to-teal-500" />
-        <StatTile label="Debit note" display={rupees(mr?.debit_note_amount)} icon={ReceiptText} gradient="from-rose-500 to-pink-500" />
-        <StatTile label="AI cost for this pack" display={usd(pack.agent_cost_usd)} icon={CircleDollarSign} gradient="from-sky-400 to-indigo-500" hint="From the cost ledger" />
+        <StatTile label="Billed" display={rupees(pack.invoice_total)} icon={Landmark} gradient="from-blue-700 to-blue-700" />
+        <StatTile label="Match engine says pay" display={rupees(pack.payable_amount)} icon={Scale} gradient="from-blue-700 to-blue-700" />
+        <StatTile label="Debit note" display={rupees(mr?.debit_note_amount)} icon={ReceiptText} gradient="from-blue-700 to-blue-700" />
+        <StatTile label="AI cost for this pack" display={usd(pack.agent_cost_usd)} icon={CircleDollarSign} gradient="from-blue-700 to-blue-700" hint="From the cost ledger" />
       </div>
       <PaySplit billed={toNumber(pack.invoice_total)} pay={toNumber(pack.payable_amount)} debit={toNumber(mr?.debit_note_amount)} />
 
@@ -118,7 +116,7 @@ function PackView({ pack }: { pack: PackDetail }) {
           <Card title="What does not add up" subtitle={blocking.length ? `${blocking.length} blocking issue${blocking.length > 1 ? "s" : ""}` : "Nothing blocks payment"} icon={TriangleAlert}>
             <ul className="space-y-3">
               {blocking.map((i) => (
-                <li key={i.code + i.message} className="rounded-2xl bg-sunk p-4 ring-1 ring-line ring-inset">
+                <li key={i.code + i.message} className="rounded-lg bg-sunk p-4 ring-1 ring-line ring-inset">
                   <Pill className={issuePill(i.code)} icon={ShieldAlert}>
                     {humanize(i.code)}
                   </Pill>
@@ -167,7 +165,7 @@ function PaySplit({ billed, pay, debit }: { billed: number | null; pay: number |
   const held = Math.max(0, debit ?? billed - pay);
   const payShare = Math.min(1, pay / billed);
   return (
-    <div className="glass rounded-3xl px-5 py-4">
+    <div className="glass rounded-lg px-5 py-4">
       <div className="flex flex-wrap items-center justify-between gap-2 text-[13px]">
         <span className="font-semibold text-ink">Where the money goes</span>
         <span className="text-ink-3">
@@ -175,8 +173,8 @@ function PaySplit({ billed, pay, debit }: { billed: number | null; pay: number |
         </span>
       </div>
       <div className="mt-3 flex h-3 gap-[2px] overflow-hidden rounded-[4px]">
-        <motion.div className="h-full bg-linear-to-r from-emerald-500 to-teal-400" initial={{ flexGrow: 0 }} animate={{ flexGrow: payShare }} transition={{ duration: 1 }} />
-        {held > 0 && <motion.div className="h-full min-w-1.5 bg-linear-to-r from-rose-500 to-pink-500" initial={{ flexGrow: 0 }} animate={{ flexGrow: 1 - payShare }} transition={{ duration: 1 }} />}
+        <motion.div className="h-full bg-emerald-600" initial={{ flexGrow: 0 }} animate={{ flexGrow: payShare }} transition={{ duration: 1 }} />
+        {held > 0 && <motion.div className="h-full min-w-1.5 bg-rose-600" initial={{ flexGrow: 0 }} animate={{ flexGrow: 1 - payShare }} transition={{ duration: 1 }} />}
       </div>
       <div className="mt-2.5 flex flex-wrap gap-x-5 gap-y-1 text-xs text-ink-2">
         <span className="flex items-center gap-1.5">
@@ -197,12 +195,13 @@ function Finding({ text }: { text: string }) {
     <motion.section
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass gradient-border relative overflow-hidden rounded-3xl p-6 sm:p-7"
-      style={{ ["--gb" as string]: "linear-gradient(120deg, #8b5cf6, #d946ef 50%, #f59e0b)" }}
+      className="glass rounded-lg border-l-4 border-l-blue-700! p-5 sm:p-6"
     >
-      <Quote className="pointer-events-none absolute -right-2 -bottom-6 size-28 text-fuchsia-500/10" />
-      <p className="text-xs font-bold tracking-[0.18em] text-fuchsia-600 uppercase dark:text-fuchsia-300">The agent’s finding</p>
-      <p className="mt-3 font-serif text-xl leading-relaxed text-ink italic sm:text-2xl">“{text}”</p>
+      <p className="flex items-center gap-1.5 text-xs font-semibold tracking-[0.08em] text-blue-700 uppercase">
+        <Quote className="size-3.5" />
+        The agent’s finding
+      </p>
+      <p className="mt-2 text-[17px] leading-relaxed text-ink">{text}</p>
     </motion.section>
   );
 }
@@ -210,7 +209,7 @@ function Finding({ text }: { text: string }) {
 function LineTable({ lines }: { lines: MatchLine[] }) {
   const n = (x: unknown) => toNumber(x as string);
   return (
-    <div className="overflow-x-auto rounded-xl ring-1 ring-line ring-inset">
+    <div className="overflow-x-auto rounded-lg ring-1 ring-line ring-inset">
       <table className="w-full text-[13px]">
         <thead>
           <tr className="bg-sunk text-right text-[11px] font-semibold tracking-wide whitespace-nowrap text-ink-3 uppercase">
@@ -263,11 +262,11 @@ function Papers({ pack }: { pack: PackDetail }) {
               aria-selected={on}
               onClick={() => setActive(d.id)}
               className={cn(
-                "flex shrink-0 items-center gap-2.5 rounded-2xl py-2 pr-4 pl-2 text-left ring-1 transition-all duration-200 ring-inset",
+                "flex shrink-0 items-center gap-2.5 rounded-lg py-2 pr-4 pl-2 text-left ring-1 transition-all duration-200 ring-inset",
                 on ? "bg-surface-2 shadow-md ring-line-strong" : "bg-sunk ring-line hover:ring-line-strong",
               )}
             >
-              <span className={cn("grid size-8 place-items-center rounded-xl bg-linear-to-br text-white", on ? t.gradient : "from-slate-400 to-slate-500 opacity-70")}>
+              <span className={cn("grid size-8 place-items-center rounded-lg bg-linear-to-br text-white", on ? t.gradient : "from-blue-700 to-blue-700 opacity-70")}>
                 <t.icon className="size-4" />
               </span>
               <span>
@@ -349,7 +348,7 @@ const OUTCOME: Record<string, string> = {
 
 function DecidedRow({ action }: { action: PendingAction }) {
   return (
-    <li className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-sunk px-4 py-3 ring-1 ring-line ring-inset">
+    <li className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-sunk px-4 py-3 ring-1 ring-line ring-inset">
       <div className="min-w-0">
         <p className="text-sm font-semibold text-ink">{humanize(action.tool)}</p>
         <p className="truncate text-xs text-ink-3">{action.description}</p>
@@ -399,7 +398,7 @@ function PendingDecisions({ pack, pending }: { pack: PackDetail; pending: Pendin
   return (
     <section>
       <div className="mb-4 flex items-start gap-4">
-        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-linear-to-br from-amber-400 to-rose-500 text-white shadow-lg shadow-rose-500/30">
+        <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-amber-600 text-white shadow-sm">
           <Gavel className="size-5" />
         </span>
         <div>
@@ -421,18 +420,18 @@ function PendingDecisions({ pack, pending }: { pack: PackDetail; pending: Pendin
           />
         ))}
       </div>
-      <div className="glass sticky bottom-4 z-20 mt-4 flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="glass sticky bottom-4 z-20 mt-4 flex flex-col gap-3 rounded-lg p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="flex gap-1">
             {pending.map((a) => (
-              <span key={a.id} className={cn("h-1.5 w-6 rounded-full transition-colors", drafts[a.id]?.type ? "bg-linear-to-r from-amber-400 to-rose-500" : "bg-line-strong")} />
+              <span key={a.id} className={cn("h-1.5 w-6 rounded-full transition-colors", drafts[a.id]?.type ? "bg-amber-600" : "bg-line-strong")} />
             ))}
           </div>
           <p className="text-sm text-ink-2">
             <b className="text-ink">{decided}</b> of {pending.length} decided · acting as {ROLE_LABELS[role]}
           </p>
         </div>
-        <Button size="lg" icon={Gavel} gradient="from-amber-400 via-orange-500 to-rose-500" loading={submit.isPending} disabled={invalid} onClick={onSubmit}>
+        <Button size="lg" icon={Gavel} gradient="from-blue-700 to-blue-700" loading={submit.isPending} disabled={invalid} onClick={onSubmit}>
           Submit decisions
         </Button>
       </div>
@@ -476,11 +475,11 @@ function ManualDecision({ pack }: { pack: PackDetail }) {
 
 // ------------------------------------------------------------------ audit
 function auditColor(action: string) {
-  if (action.startsWith("approve") || action === "manual_approve") return "from-emerald-400 to-teal-500";
-  if (action.startsWith("reject") || action === "manual_reject") return "from-rose-500 to-red-500";
-  if (action.startsWith("edit")) return "from-amber-400 to-orange-500";
-  if (action === "export") return "from-sky-400 to-cyan-400";
-  return "from-violet-500 to-fuchsia-500";
+  if (action.startsWith("approve") || action === "manual_approve") return "from-blue-700 to-blue-700";
+  if (action.startsWith("reject") || action === "manual_reject") return "from-blue-700 to-blue-700";
+  if (action.startsWith("edit")) return "from-blue-700 to-blue-700";
+  if (action === "export") return "from-blue-700 to-blue-700";
+  return "from-blue-700 to-blue-700";
 }
 
 function Audit({ pack }: { pack: PackDetail }) {

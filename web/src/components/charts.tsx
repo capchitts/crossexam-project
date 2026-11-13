@@ -17,7 +17,6 @@ export function StatTile({
   display,
   hint,
   icon: Icon,
-  gradient,
   to,
   emphasis,
 }: {
@@ -32,29 +31,19 @@ export function StatTile({
   to?: string;
   emphasis?: boolean;
 }) {
-  const theme = usePageTheme();
   const body = (
     <>
-      <div
-        className={cn(
-          "pointer-events-none absolute -top-10 -right-10 size-32 rounded-full bg-linear-to-br opacity-20 blur-2xl transition-opacity duration-500 group-hover:opacity-40",
-          gradient ?? theme.gradient,
-        )}
-      />
-      <div className="relative flex items-start justify-between gap-3">
+      <div className="flex items-center justify-between gap-3">
         <p className="text-[13px] font-medium text-ink-2">{label}</p>
-        <span className={cn("grid size-9 shrink-0 place-items-center rounded-xl bg-linear-to-br text-white shadow-md", gradient ?? theme.gradient)}>
-          <Icon className="size-4" strokeWidth={2.3} />
-        </span>
+        <Icon className="size-4 shrink-0 text-ink-3" strokeWidth={2} />
       </div>
-      <p className={cn("relative mt-3 font-semibold tracking-tight text-ink tabular", emphasis ? "text-4xl" : "text-3xl")}>
+      <p className={cn("mt-2 font-semibold tracking-tight text-ink tabular", emphasis ? "text-[32px]" : "text-[26px]")}>
         {display ?? (value !== undefined ? <AnimatedNumber value={value} format={format} /> : "—")}
       </p>
-      {hint && <p className="relative mt-1.5 text-xs text-ink-3">{hint}</p>}
-      <div className={cn("absolute inset-x-6 bottom-0 h-px bg-linear-to-r opacity-0 transition-opacity duration-300 group-hover:opacity-100", gradient ?? theme.gradient)} />
+      {hint && <p className="mt-1 text-xs leading-snug text-ink-3">{hint}</p>}
     </>
   );
-  const cls = "glass group relative block overflow-hidden rounded-3xl p-5 transition-transform duration-300 hover:-translate-y-0.5";
+  const cls = "glass block min-w-0 rounded-lg p-4 transition-colors hover:border-line-strong";
   return to ? (
     <Link to={to} className={cls}>
       {body}
@@ -100,7 +89,7 @@ export function BarList({
             key={item.key}
             onMouseEnter={() => setHover(item.key)}
             onMouseLeave={() => setHover(null)}
-            className="relative rounded-xl px-2 py-2 transition-colors hover:bg-sunk"
+            className="relative rounded-lg px-2 py-2 transition-colors hover:bg-sunk"
           >
             <span className="flex min-w-0 items-center gap-2 text-[13px] text-ink-2">
               {item.icon ? (

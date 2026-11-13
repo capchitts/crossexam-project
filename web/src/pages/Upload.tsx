@@ -29,10 +29,10 @@ import type { Priority, UploadResult } from "../lib/types";
 type Kind = "pdf" | "image" | "sheet" | "json";
 
 const KINDS: Record<Kind, { label: string; hint: string; icon: LucideIcon; gradient: string; ext: string[] }> = {
-  pdf: { label: "PDF", hint: "Digital or scanned", icon: FileText, gradient: "from-rose-500 to-pink-500", ext: [".pdf"] },
-  image: { label: "Photos", hint: "PNG and JPG scans", icon: FileImage, gradient: "from-amber-400 to-orange-500", ext: [".png", ".jpg", ".jpeg"] },
-  sheet: { label: "Spreadsheets", hint: "Excel and CSV", icon: FileSpreadsheet, gradient: "from-emerald-400 to-teal-500", ext: [".xlsx", ".xls", ".csv"] },
-  json: { label: "GST JSON", hint: "E-way bills", icon: FileJson, gradient: "from-sky-400 to-indigo-500", ext: [".json"] },
+  pdf: { label: "PDF", hint: "Digital or scanned", icon: FileText, gradient: "from-blue-700 to-blue-700", ext: [".pdf"] },
+  image: { label: "Photos", hint: "PNG and JPG scans", icon: FileImage, gradient: "from-blue-700 to-blue-700", ext: [".png", ".jpg", ".jpeg"] },
+  sheet: { label: "Spreadsheets", hint: "Excel and CSV", icon: FileSpreadsheet, gradient: "from-blue-700 to-blue-700", ext: [".xlsx", ".xls", ".csv"] },
+  json: { label: "GST JSON", hint: "E-way bills", icon: FileJson, gradient: "from-blue-700 to-blue-700", ext: [".json"] },
 };
 
 const ACCEPT = Object.values(KINDS).flatMap((k) => k.ext);
@@ -132,13 +132,13 @@ export function Upload() {
                     aria-checked={active}
                     onClick={() => setPriority(p)}
                     className={cn(
-                      "flex items-center gap-3 rounded-2xl p-3 text-left ring-1 transition-all duration-200 ring-inset",
+                      "flex items-center gap-3 rounded-lg p-3 text-left ring-1 transition-all duration-200 ring-inset",
                       active ? "bg-surface-2 shadow-md ring-line-strong" : "bg-sunk ring-line hover:ring-line-strong",
                     )}
                   >
                     <span
                       className={cn(
-                        "grid size-9 shrink-0 place-items-center rounded-xl transition-all",
+                        "grid size-9 shrink-0 place-items-center rounded-lg transition-all",
                         active ? cn("bg-linear-to-br text-white shadow-md", meta.active) : "bg-sunk text-ink-3",
                       )}
                     >
@@ -181,7 +181,7 @@ export function Upload() {
             {uploading && (
               <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-sunk">
                 <motion.div
-                  className="h-full rounded-full bg-linear-to-r from-fuchsia-500 via-violet-500 to-cyan-400"
+                  className="h-full rounded-full bg-blue-700"
                   animate={{ width: `${(progress ?? 0) * 100}%` }}
                 />
               </div>
@@ -205,7 +205,7 @@ export function Upload() {
               addFiles(e.dataTransfer.files);
             }}
             className={cn(
-              "relative overflow-hidden rounded-[32px] p-[2px] transition-transform duration-300",
+              "relative overflow-hidden rounded-lg p-[2px] transition-transform duration-300",
               dragging && "scale-[1.01]",
             )}
           >
@@ -214,7 +214,7 @@ export function Upload() {
                 "spin-slow absolute -inset-[60%] transition-opacity duration-500",
                 dragging ? "opacity-100" : "opacity-40",
               )}
-              style={{ background: "conic-gradient(from 0deg, #d946ef, #8b5cf6, #06b6d4, #f59e0b, #d946ef)" }}
+              style={{ background: "conic-gradient(from 0deg, #3b82f6, #3b82f6, #1d4ed8, #f59e0b, #3b82f6)" }}
             />
             <button
               type="button"
@@ -232,8 +232,8 @@ export function Upload() {
                 {(Object.keys(KINDS) as Kind[]).map((k) => {
                   const kind = KINDS[k];
                   return (
-                    <span key={k} className="flex items-center gap-2 rounded-2xl bg-sunk py-1.5 pr-3.5 pl-1.5 ring-1 ring-line ring-inset">
-                      <span className={cn("grid size-7 place-items-center rounded-xl bg-linear-to-br text-white", kind.gradient)}>
+                    <span key={k} className="flex items-center gap-2 rounded-lg bg-sunk py-1.5 pr-3.5 pl-1.5 ring-1 ring-line ring-inset">
+                      <span className={cn("grid size-7 place-items-center rounded-lg bg-linear-to-br text-white", kind.gradient)}>
                         <kind.icon className="size-3.5" />
                       </span>
                       <span className="text-left">
@@ -278,7 +278,7 @@ export function Upload() {
                     {files.map((f) => {
                       const kind = KINDS[kindOf(f.name)!];
                       return (
-                        <li key={fileKey(f)} className="group flex items-center gap-3 rounded-xl px-2 py-1.5 hover:bg-sunk">
+                        <li key={fileKey(f)} className="group flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-sunk">
                           <span className={cn("grid size-8 shrink-0 place-items-center rounded-lg bg-linear-to-br text-white", kind.gradient)}>
                             <kind.icon className="size-4" />
                           </span>
@@ -308,14 +308,14 @@ export function Upload() {
         {/* ------------------------------------------------ tips, beside the drop zone */}
         <Card title="Good to know" icon={ScanSearch} className="h-fit">
           <ul className="space-y-4">
-            <Tip icon={Scissors} gradient="from-violet-500 to-fuchsia-500" title="Bundles are split">
+            <Tip icon={Scissors} gradient="from-blue-700 to-blue-700" title="Bundles are split">
               One scan holding an invoice, packing list and lorry receipt becomes three documents.
             </Tip>
-            <Tip icon={Copy} gradient="from-amber-400 to-orange-500" title="Never read twice">
+            <Tip icon={Copy} gradient="from-blue-700 to-blue-700" title="Never read twice">
               The same file uploaded again is skipped. A scanned copy of an invoice is caught as a possible duplicate
               after reading.
             </Tip>
-            <Tip icon={Terminal} gradient="from-sky-400 to-indigo-500" title="Demo data">
+            <Tip icon={Terminal} gradient="from-blue-700 to-blue-700" title="Demo data">
               Run <code className="font-mono text-[12px]">scripts\demo-data.cmd 60</code>, then upload everything in{" "}
               <code className="font-mono text-[12px]">data\generated\files</code>.
             </Tip>
@@ -329,7 +329,7 @@ export function Upload() {
 function Tip({ icon: Icon, gradient, title, children }: { icon: LucideIcon; gradient: string; title: string; children: React.ReactNode }) {
   return (
     <li className="flex gap-3">
-      <span className={cn("grid size-8 shrink-0 place-items-center rounded-xl bg-linear-to-br text-white", gradient)}>
+      <span className={cn("grid size-8 shrink-0 place-items-center rounded-lg bg-linear-to-br text-white", gradient)}>
         <Icon className="size-4" />
       </span>
       <div>
@@ -348,13 +348,12 @@ function ResultPanel({ result, onDismiss }: { result: UploadResult; onDismiss: (
       initial={{ opacity: 0, scale: 0.97, y: 16 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.97 }}
-      className="glass gradient-border relative overflow-hidden rounded-[28px] p-6"
-      style={{ ["--gb" as string]: "linear-gradient(120deg, #10b981, #06b6d4, #8b5cf6)" }}
+      className="glass gradient-border relative overflow-hidden rounded-lg p-6"
+      style={{ ["--gb" as string]: "linear-gradient(120deg, #10b981, #1d4ed8, #3b82f6)" }}
     >
-      <div className="pointer-events-none absolute -top-20 -left-10 size-60 rounded-full bg-emerald-500/20 blur-3xl" />
       <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center">
         <motion.span initial={{ scale: 0, rotate: -30 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", delay: 0.1 }}>
-          <IconBadge icon={nothingNew ? Copy : CircleCheckBig} size="lg" gradient={nothingNew ? "from-amber-400 to-orange-500" : "from-emerald-400 to-teal-500"} />
+          <IconBadge icon={nothingNew ? Copy : CircleCheckBig} size="lg" gradient={nothingNew ? "from-blue-700 to-blue-700" : "from-blue-700 to-blue-700"} />
         </motion.span>
         <div className="flex-1">
           <p className="text-xl font-semibold tracking-tight text-ink">
@@ -368,7 +367,7 @@ function ResultPanel({ result, onDismiss }: { result: UploadResult; onDismiss: (
         </div>
         <div className="flex gap-2">
           {!nothingNew && (
-            <LinkButton to={`/batches/${result.batch_id}`} icon={ArrowRight} gradient="from-cyan-400 via-sky-500 to-indigo-500">
+            <LinkButton to={`/batches/${result.batch_id}`} icon={ArrowRight} gradient="from-blue-700 to-blue-700">
               Watch it live
             </LinkButton>
           )}
@@ -376,7 +375,7 @@ function ResultPanel({ result, onDismiss }: { result: UploadResult; onDismiss: (
         </div>
       </div>
       {dupes > 0 && (
-        <details className="relative mt-4 rounded-2xl bg-sunk p-3 text-sm ring-1 ring-line ring-inset">
+        <details className="relative mt-4 rounded-lg bg-sunk p-3 text-sm ring-1 ring-line ring-inset">
           <summary className="cursor-pointer font-semibold text-ink-2">Skipped files</summary>
           <ul className="mt-2 max-h-48 space-y-1 overflow-y-auto font-mono text-xs text-ink-3">
             {result.duplicate_files.map((d) => (

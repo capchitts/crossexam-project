@@ -90,13 +90,13 @@ function BatchList({ batches, selected }: { batches: Batch[]; selected?: string 
               <Link
                 to={`/batches/${b.id}`}
                 className={cn(
-                  "block rounded-2xl p-3 ring-1 transition-all duration-200 ring-inset",
-                  active ? "bg-surface-2 shadow-md ring-cyan-400/40" : "ring-transparent hover:bg-sunk",
+                  "block rounded-lg p-3 ring-1 transition-all duration-200 ring-inset",
+                  active ? "bg-surface-2 shadow-md ring-blue-400/40" : "ring-transparent hover:bg-sunk",
                 )}
               >
                 <div className="flex items-center justify-between gap-2">
                   <p className="truncate text-sm font-semibold text-ink">{b.name}</p>
-                  {b.status !== "grouped" && <LiveDot color="#06b6d4" />}
+                  {b.status !== "grouped" && <LiveDot color="#1d4ed8" />}
                 </div>
                 <div className="mt-2 flex items-center gap-2">
                   <Pill icon={prio.icon} className={cn(prio.pill, "px-2 py-0.5 text-[11px]")}>
@@ -135,21 +135,20 @@ function BatchView({ s }: { s: BatchStatus }) {
   return (
     <div className="space-y-6">
       {/* ------------------------------------------------ progress hero */}
-      <section className="glass gradient-border relative overflow-hidden rounded-[28px] p-6" style={{ ["--gb" as string]: "linear-gradient(120deg, #22d3ee, #3b82f6 50%, #8b5cf6)" }}>
-        <div className="pointer-events-none absolute -top-24 -right-16 size-72 rounded-full bg-cyan-500/20 blur-3xl" />
+      <section className="glass gradient-border relative overflow-hidden rounded-lg p-6" style={{ ["--gb" as string]: "linear-gradient(120deg, #3b82f6, #3b82f6 50%, #3b82f6)" }}>
         <div className="relative flex flex-col gap-6 md:flex-row md:items-center">
           <RingMeter
             value={total ? done / total : 0}
             label={`${total ? Math.round((done / total) * 100) : 0}%`}
             sublabel={`${done} of ${total} read`}
-            colors={["#22d3ee", "#6366f1"]}
+            colors={["#3b82f6", "#1d4ed8"]}
           />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               {live ? (
-                <Pill className="bg-cyan-400/15 text-cyan-700 ring-cyan-500/30 dark:text-cyan-300">
+                <Pill className="bg-blue-400/15 text-blue-700 ring-blue-500/30 dark:text-blue-300">
                   <span className="flex items-center gap-2">
-                    <LiveDot color="#06b6d4" />
+                    <LiveDot color="#1d4ed8" />
                     Live
                   </span>
                 </Pill>
@@ -173,14 +172,14 @@ function BatchView({ s }: { s: BatchStatus }) {
 
       {/* ------------------------------------------------ tiles */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-4">
-        <StatTile label="Read and extracted" value={docs.extracted ?? 0} icon={FileStack} gradient="from-cyan-400 to-blue-500" />
-        <StatTile label="Shipment packs" value={packCount} icon={PackageOpen} gradient="from-indigo-500 to-violet-500" />
-        <StatTile label="Approved automatically" value={s.packs.auto_approved ?? 0} icon={Sparkles} gradient="from-emerald-400 to-teal-500" />
+        <StatTile label="Read and extracted" value={docs.extracted ?? 0} icon={FileStack} gradient="from-blue-700 to-blue-700" />
+        <StatTile label="Shipment packs" value={packCount} icon={PackageOpen} gradient="from-blue-700 to-blue-700" />
+        <StatTile label="Approved automatically" value={s.packs.auto_approved ?? 0} icon={Sparkles} gradient="from-blue-700 to-blue-700" />
         <StatTile
           label="Need attention"
           value={attention}
           icon={Gavel}
-          gradient="from-amber-400 to-rose-500"
+          gradient="from-blue-700 to-blue-700"
           to="/review"
           hint={attention ? "Open the review queue →" : "Nothing waiting on a person"}
         />
@@ -190,7 +189,7 @@ function BatchView({ s }: { s: BatchStatus }) {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card title="Documents by type" subtitle="Read and extracted so far" icon={FileStack}>
           <BarList
-            color="#06b6d4"
+            color="#1d4ed8"
             emptyText="No documents extracted yet."
             items={Object.entries(s.by_type)
               .sort((a, b) => b[1] - a[1])
@@ -211,7 +210,7 @@ function BatchView({ s }: { s: BatchStatus }) {
         <Card title="Live counters" subtitle="Ticked by the workers as each step finishes" icon={Activity}>
           <div className="flex flex-wrap gap-2">
             {Object.entries(s.live_counters).map(([k, v]) => (
-              <span key={k} className="rounded-xl bg-sunk px-3 py-1.5 text-xs text-ink-2 ring-1 ring-line ring-inset">
+              <span key={k} className="rounded-lg bg-sunk px-3 py-1.5 text-xs text-ink-2 ring-1 ring-line ring-inset">
                 {humanize(k)} <b className="ml-1 text-ink tabular">{v}</b>
               </span>
             ))}

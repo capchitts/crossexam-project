@@ -47,7 +47,7 @@ export function Overview() {
           format={(n) => `${Math.round(n)}%`}
           hint="Packs approved with no person involved, last 30 days"
           icon={Wand2}
-          gradient="from-violet-500 to-fuchsia-500"
+          gradient="from-blue-700 to-blue-700"
           to="/monitoring"
         />
         <StatTile
@@ -55,7 +55,7 @@ export function Overview() {
           value={s?.documents_extracted}
           hint="Read and extracted, last 30 days"
           icon={FileStack}
-          gradient="from-cyan-400 to-blue-500"
+          gradient="from-blue-700 to-blue-700"
           to="/batches"
         />
         <StatTile
@@ -64,7 +64,7 @@ export function Overview() {
           format={(n) => `$${n.toFixed(4)}`}
           hint="Every paid model call is in the cost ledger"
           icon={CircleDollarSign}
-          gradient="from-emerald-400 to-teal-500"
+          gradient="from-blue-700 to-blue-700"
           to="/monitoring"
         />
         <StatTile
@@ -72,7 +72,7 @@ export function Overview() {
           value={attention}
           hint="Packs the agents could not settle on their own"
           icon={Gavel}
-          gradient="from-amber-400 to-rose-500"
+          gradient="from-blue-700 to-blue-700"
           to="/review"
         />
       </section>
@@ -88,44 +88,31 @@ export function Overview() {
 // ------------------------------------------------------------------ hero
 function Hero({ attention }: { attention?: number }) {
   return (
-    <section className="glass gradient-border relative overflow-hidden rounded-[32px] p-6 sm:p-10 lg:p-12">
-      <div className="pointer-events-none absolute -top-32 -right-24 size-[28rem] rounded-full bg-fuchsia-500/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-40 left-1/3 size-[26rem] rounded-full bg-violet-500/20 blur-3xl" />
-      <div className="relative grid items-center gap-10 lg:grid-cols-[1.15fr_1fr]">
+    <section className="glass rounded-lg p-6 sm:p-8 lg:p-10">
+      <div className="grid items-center gap-10 lg:grid-cols-[1.2fr_1fr]">
         <div>
-          <Pill icon={Sparkles} className="bg-violet-500/12 text-violet-700 ring-violet-500/25 dark:text-violet-200">
-            Multi-agent document intelligence
-          </Pill>
-          <h1 className="mt-5 text-4xl leading-[1.05] font-bold tracking-tight text-ink sm:text-5xl xl:text-6xl">
-            Every paper is a{" "}
-            <GradientText theme={THEMES.aurora}>witness.</GradientText>
-            <br />
-            The agents{" "}
-            <GradientText theme={THEMES.sunset}>cross‑examine</GradientText>{" "}
-            them.
+          <p className="text-xs font-semibold tracking-[0.08em] text-blue-700 uppercase">Multi-agent document intelligence</p>
+          <h1 className="mt-3 text-3xl leading-tight font-semibold tracking-tight text-ink sm:text-4xl xl:text-[42px]">
+            Supplier papers, read, checked and routed to the right person.
           </h1>
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-ink-2 sm:text-lg">
-            CrossExam reads supplier paperwork in any format, groups the papers that belong to one shipment, checks
-            that they agree with each other, with the purchase order and with what the warehouse received, and hands
-            people only the cases that need them, with the evidence and a proposed fix.
+          <p className="mt-4 max-w-xl text-[15.5px] leading-relaxed text-ink-2">
+            CrossExam reads supplier paperwork in any format, groups the papers that belong to one shipment, checks that they agree with each
+            other, with the purchase order and with what the warehouse received, and hands people only the cases that need them, with the
+            evidence and a proposed fix.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <LinkButton to="/upload" size="lg" icon={CloudUpload} gradient="from-violet-500 via-fuchsia-500 to-pink-500">
+          <div className="mt-6 flex flex-wrap gap-3">
+            <LinkButton to="/upload" size="lg" icon={CloudUpload}>
               Upload a batch
             </LinkButton>
             <LinkButton to="/review" size="lg" variant="ghost" icon={Gavel}>
               Open review queue
-              {!!attention && (
-                <span className="ml-1 rounded-full bg-linear-to-r from-amber-400 to-rose-500 px-2 py-0.5 text-xs font-bold text-white">
-                  {attention}
-                </span>
-              )}
+              {!!attention && <span className="ml-1 rounded bg-amber-500 px-1.5 py-0.5 text-xs font-bold text-slate-900">{attention}</span>}
             </LinkButton>
           </div>
-          <div className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-ink-3">
+          <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-ink-3">
             {["LangChain v1 agents", "Celery + Redis", "PostgreSQL + pgvector", "FastAPI", "Google Cloud Run"].map((t) => (
               <span key={t} className="flex items-center gap-1.5">
-                <span className="size-1.5 rounded-full bg-linear-to-r from-violet-400 to-amber-300" />
+                <span className="size-1.5 rounded-full bg-blue-700" />
                 {t}
               </span>
             ))}
@@ -137,58 +124,35 @@ function Hero({ attention }: { attention?: number }) {
   );
 }
 
-/** An illustration of the short-shipment case: three papers disagree, the verdict explains why. */
+/** A worked example of a short shipment: three papers, one disagreement, one verdict. */
 function EvidenceStack() {
-  // Laid out so no paper hides another: two side by side, the warehouse's receipt below them.
-  const papers = [
-    { title: "Invoice", sub: "billed", qty: "500 cartons", tint: "from-violet-500 to-fuchsia-500", rotate: -5, left: "0%", top: 0 },
-    { title: "Lorry receipt", sub: "transporter carried", qty: "488 cartons", tint: "from-amber-400 to-orange-500", rotate: 4, left: "52%", top: 28 },
-    { title: "Goods receipt", sub: "warehouse received", qty: "488 cartons", tint: "from-cyan-400 to-blue-500", rotate: -2, left: "26%", top: 162 },
+  const rows = [
+    { title: "Invoice", sub: "what the supplier billed", qty: 500, bad: true },
+    { title: "Lorry receipt", sub: "what the transporter carried", qty: 488 },
+    { title: "Goods receipt", sub: "what the warehouse received", qty: 488 },
   ];
   return (
-    <div className="relative mx-auto h-[370px] w-full max-w-[420px]" aria-hidden>
-      {papers.map((p, i) => (
-        <motion.div
-          key={p.title}
-          className="glass absolute w-[48%] rounded-2xl bg-surface-2! p-4"
-          style={{ left: p.left, top: p.top }}
-          initial={{ opacity: 0, y: 30, rotate: 0 }}
-          animate={{ opacity: 1, y: [0, -7, 0], rotate: p.rotate }}
-          transition={{
-            opacity: { duration: 0.6, delay: 0.15 * i },
-            rotate: { duration: 0.8, delay: 0.15 * i, ease: [0.22, 1, 0.36, 1] },
-            y: { duration: 5 + i, repeat: Infinity, ease: "easeInOut", delay: 0.15 * i },
-          }}
-        >
-          <div className="flex items-center gap-2.5">
-            <span className={cn("grid size-8 place-items-center rounded-lg bg-linear-to-br text-white", p.tint)}>
-              <FileStack className="size-4" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-ink">{p.title}</p>
-              <p className="text-[11px] text-ink-3">{p.sub}</p>
+    <div className="rounded-lg border border-line bg-sunk p-4" aria-hidden>
+      <p className="text-[11px] font-semibold tracking-[0.1em] text-ink-3 uppercase">Example: one shipment, three papers</p>
+      <div className="mt-3 space-y-2">
+        {rows.map((r) => (
+          <div key={r.title} className="flex items-center gap-3 rounded-md border border-line bg-white px-3 py-2.5">
+            <FileStack className="size-4 shrink-0 text-ink-3" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-ink">{r.title}</p>
+              <p className="text-xs text-ink-3">{r.sub}</p>
             </div>
+            <p className={cn("text-base font-semibold tabular", r.bad ? "text-rose-600" : "text-ink")}>{r.qty} cartons</p>
           </div>
-          <div className="mt-3 h-1.5 w-3/4 rounded-full bg-line" />
-          <p className="mt-2.5 text-xl font-bold tracking-tight text-ink tabular">{p.qty}</p>
-        </motion.div>
-      ))}
-      <motion.div
-        className="absolute right-0 bottom-0 left-0 mx-auto w-[290px] rounded-2xl bg-linear-to-r from-rose-500 via-fuchsia-500 to-violet-500 p-[1px] shadow-2xl shadow-fuchsia-500/30"
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ delay: 0.8, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <div className="flex items-center gap-3 rounded-2xl bg-page/90 p-3.5 backdrop-blur-xl">
-          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-linear-to-br from-rose-500 to-fuchsia-500 text-white">
-            <ScanSearch className="size-5" />
-          </span>
-          <div>
-            <p className="text-sm font-semibold text-ink">Short shipment: 12 cartons</p>
-            <p className="text-xs text-ink-3">Pay for 488 · debit note proposed</p>
-          </div>
+        ))}
+      </div>
+      <div className="mt-3 flex items-center gap-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2.5">
+        <ScanSearch className="size-5 shrink-0 text-rose-600" />
+        <div>
+          <p className="text-sm font-semibold text-ink">Short shipment: 12 cartons</p>
+          <p className="text-xs text-ink-2">Pay for 488 and propose a debit note.</p>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
@@ -197,7 +161,7 @@ function EvidenceStack() {
 type Who = "ai" | "code" | "person";
 
 const WHO: Record<Who, { label: string; icon: LucideIcon; cls: string }> = {
-  ai: { label: "AI", icon: Sparkles, cls: "bg-fuchsia-500/12 text-fuchsia-700 ring-fuchsia-500/25 dark:text-fuchsia-200" },
+  ai: { label: "AI", icon: Sparkles, cls: "bg-blue-500/12 text-blue-700 ring-blue-500/25 dark:text-blue-200" },
   code: { label: "Code", icon: Braces, cls: "bg-emerald-500/12 text-emerald-700 ring-emerald-500/25 dark:text-emerald-200" },
   person: { label: "Person", icon: UserRound, cls: "bg-amber-500/12 text-amber-700 ring-amber-500/25 dark:text-amber-200" },
 };
@@ -250,9 +214,9 @@ function Journey() {
           const t = THEMES[phase.theme];
           return (
             <motion.div key={phase.name} {...rise} transition={{ ...rise.transition, delay: i * 0.08 }} className="relative">
-              <div className="glass h-full rounded-3xl p-5">
+              <div className="glass h-full rounded-lg p-5">
                 <div className="flex items-center gap-3">
-                  <span className={cn("grid size-9 place-items-center rounded-xl bg-linear-to-br text-sm font-bold text-white shadow-lg", t.gradient, t.glow)}>
+                  <span className={cn("grid size-9 place-items-center rounded-lg bg-linear-to-br text-sm font-bold text-white shadow-lg", t.gradient, t.glow)}>
                     {i + 1}
                   </span>
                   <h3 className="text-lg font-semibold tracking-tight text-ink">{phase.name}</h3>
@@ -260,7 +224,7 @@ function Journey() {
                 <div className={cn("mt-4 h-[3px] rounded-full bg-linear-to-r opacity-80", t.gradient)} />
                 <ol className="mt-4 space-y-3">
                   {phase.steps.map((step) => (
-                    <li key={step.title} className="rounded-2xl bg-sunk p-3.5 ring-1 ring-line ring-inset">
+                    <li key={step.title} className="rounded-lg bg-sunk p-3.5 ring-1 ring-line ring-inset">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <p className="text-sm font-semibold text-ink">{step.title}</p>
                         <span className="flex gap-1">
@@ -294,9 +258,9 @@ function DesignRule() {
   const ai = ["Reads documents in any format", "Splits mixed bundles", "Investigates what does not add up", "Drafts the supplier email"];
   const code = ["Totals, tax and tolerances", "Matching against PO and GRN", "Every money decision", "ERP export, exactly once"];
   return (
-    <motion.section {...rise} className="glass gradient-border relative overflow-hidden rounded-[32px] p-6 sm:p-10" style={{ ["--gb" as string]: "linear-gradient(120deg, #d946ef, #8b5cf6 40%, #10b981)" }}>
+    <motion.section {...rise} className="glass gradient-border relative overflow-hidden rounded-lg p-6 sm:p-10" style={{ ["--gb" as string]: "linear-gradient(120deg, #3b82f6, #3b82f6 40%, #10b981)" }}>
       <div className="text-center">
-        <p className="text-xs font-bold tracking-[0.18em] text-violet-600 uppercase dark:text-violet-300">The one design rule</p>
+        <p className="text-xs font-bold tracking-[0.18em] text-blue-600 uppercase dark:text-blue-300">The one design rule</p>
         <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
           AI investigates. <GradientText theme={THEMES.lagoon}>Code decides money.</GradientText>
         </h2>
@@ -306,11 +270,11 @@ function DesignRule() {
         </p>
       </div>
       <div className="relative mt-8 grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-center">
-        <RuleColumn title="What the AI does" icon={Bot} gradient="from-fuchsia-500 to-violet-500" items={ai} />
-        <div className="mx-auto grid size-16 place-items-center rounded-full bg-linear-to-br from-violet-500 to-emerald-500 text-white shadow-xl shadow-violet-500/30">
+        <RuleColumn title="What the AI does" icon={Bot} gradient="from-blue-700 to-blue-700" items={ai} />
+        <div className="mx-auto grid size-16 place-items-center rounded-full bg-blue-700 text-white shadow-sm">
           <Scale className="size-7" />
         </div>
-        <RuleColumn title="What plain code does" icon={Braces} gradient="from-emerald-500 to-teal-500" items={code} />
+        <RuleColumn title="What plain code does" icon={Braces} gradient="from-blue-700 to-blue-700" items={code} />
       </div>
     </motion.section>
   );
@@ -318,7 +282,7 @@ function DesignRule() {
 
 function RuleColumn({ title, icon, gradient, items }: { title: string; icon: LucideIcon; gradient: string; items: string[] }) {
   return (
-    <div className="rounded-3xl bg-sunk p-5 ring-1 ring-line ring-inset">
+    <div className="rounded-lg bg-sunk p-5 ring-1 ring-line ring-inset">
       <div className="flex items-center gap-3">
         <IconBadge icon={icon} size="sm" gradient={gradient} />
         <h3 className="font-semibold text-ink">{title}</h3>
@@ -342,28 +306,28 @@ const AGENTS: { name: string; tier: string; tools: string[]; gated?: string[]; o
     tier: "small model",
     tools: ["page_text", "page_image", "doc_type_catalog"],
     output: "Segments per document; code repairs page coverage",
-    gradient: "from-sky-400 to-indigo-500",
+    gradient: "from-blue-700 to-blue-700",
   },
   {
     name: "Extractors",
     tier: "small, escalates to strong",
     tools: ["hsn_lookup", "gstin_check", "unit_convert"],
     output: "A strict Pydantic form per document type",
-    gradient: "from-violet-500 to-fuchsia-500",
+    gradient: "from-blue-700 to-blue-700",
   },
   {
     name: "Supervisor",
     tier: "small model",
     tools: ["run_reconciler", "pack_overview", "match_engine"],
     output: "Route: auto-approve, investigate or human review",
-    gradient: "from-fuchsia-500 to-pink-500",
+    gradient: "from-blue-700 to-blue-700",
   },
   {
     name: "Reconciler",
     tier: "mid model",
     tools: ["pack_overview", "find_related_docs", "match_engine", "tolerance_rules"],
     output: "Report and proposed links, verified by code",
-    gradient: "from-amber-400 to-orange-500",
+    gradient: "from-blue-700 to-blue-700",
   },
   {
     name: "Exception resolver",
@@ -371,7 +335,7 @@ const AGENTS: { name: string; tier: string; tools: string[]; gated?: string[]; o
     tools: ["po_grn_lookup", "supplier_history", "similar_cases", "duplicate_search", "match_engine"],
     gated: ["propose_fix", "draft_supplier_email"],
     output: "A finding; write actions wait for a person",
-    gradient: "from-rose-500 to-red-500",
+    gradient: "from-blue-700 to-blue-700",
   },
 ];
 
@@ -388,10 +352,9 @@ function Agents() {
             key={a.name}
             {...rise}
             transition={{ ...rise.transition, delay: i * 0.06 }}
-            className="glass group relative flex flex-col overflow-hidden rounded-3xl p-5 transition-transform duration-300 hover:-translate-y-1"
+            className="glass group relative flex flex-col overflow-hidden rounded-lg p-5 transition-transform duration-300 hover:-translate-y-1"
           >
             <div className={cn("absolute inset-x-0 top-0 h-1 bg-linear-to-r", a.gradient)} />
-            <div className={cn("pointer-events-none absolute -top-16 -right-16 size-36 rounded-full bg-linear-to-br opacity-15 blur-2xl transition-opacity group-hover:opacity-30", a.gradient)} />
             <IconBadge icon={Bot} size="sm" gradient={a.gradient} />
             <h3 className="mt-4 text-base font-semibold text-ink">{a.name}</h3>
             <p className="text-xs font-medium text-ink-3">{a.tier}</p>
@@ -441,9 +404,9 @@ function Guardrails() {
       </SectionHeading>
       <motion.ol {...rise} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {GUARDRAILS.map((g, i) => (
-          <li key={g.name} className="glass flex gap-4 rounded-2xl p-4">
+          <li key={g.name} className="glass flex gap-4 rounded-lg p-4">
             <span
-              className="grid size-10 shrink-0 place-items-center rounded-xl text-sm font-bold text-white shadow-md"
+              className="grid size-10 shrink-0 place-items-center rounded-lg text-sm font-bold text-white shadow-md"
               style={{ background: `linear-gradient(135deg, hsl(${160 + i * 18} 80% 50%), hsl(${190 + i * 18} 85% 55%))` }}
             >
               {i + 1}
@@ -451,7 +414,7 @@ function Guardrails() {
             <div className="min-w-0">
               <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-ink">
                 {g.name}
-                <span className={cn("rounded-full px-1.5 py-px text-[10px] font-bold tracking-wide uppercase", g.custom ? "bg-fuchsia-500/12 text-fuchsia-700 dark:text-fuchsia-300" : "bg-sunk text-ink-3")}>
+                <span className={cn("rounded-full px-1.5 py-px text-[10px] font-bold tracking-wide uppercase", g.custom ? "bg-blue-500/12 text-blue-700 dark:text-blue-300" : "bg-sunk text-ink-3")}>
                   {g.custom ? "custom" : "built-in"}
                 </span>
               </p>

@@ -8,6 +8,8 @@ Built on **LangChain v1** (`create_agent` + middleware), **Celery**, **Redis**, 
 
 > Kaveri Distributors, its suppliers and every number in the demo data are fictional.
 
+> **Learning it step by step?** Start with [docs/STEP-BY-STEP-BUILD.md](docs/STEP-BY-STEP-BUILD.md): eight steps, from one agent in one file to the full system, using the exact demo papers in `demo-data/`.
+
 ---
 
 ## Contents
@@ -144,7 +146,7 @@ start uvicorn app.ui.server:app --port 8080
 
 ### The web screen
 
-The screen is a React + TypeScript app in `web/` (Vite, Tailwind CSS, TanStack Query, Motion). Each page has its own colour theme, and there is a light/dark toggle in the sidebar:
+The screen is a React + TypeScript app in `web/` (Vite, Tailwind CSS, TanStack Query, Motion). One formal design (a navy sidebar, a single blue accent, flat panels) is used on every page:
 
 | Page | What it shows |
 |---|---|
