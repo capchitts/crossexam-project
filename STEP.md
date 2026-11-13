@@ -114,3 +114,37 @@ Shipment 2: PO PO-40010   5 papers
 **Notice:** the lorry receipt shares no PO number with the invoice, and a certificate shares only a batch number. They still end up in the same shipment, linked through a chain: lorry receipt, invoice number, invoice, PO. Eleven papers from nine files become **two shipments, 6 and 5 papers**. And the one lorry written two ways (`KL19 KI 5987` and `KL19KI5987`) is one vehicle after normalising.
 
 **A doubt worth saying out loud:** *"Why not group by vehicle? It is on three papers."* Because one lorry carries many shipments in a month. A weak key as a hint is fine; as a rule it would merge unrelated shipments.
+
+---
+
+## 3e. Compare the invoice with the order, exactly (`git checkout build/step-3e-match`)
+`demo-data/master.json` holds the purchase orders and the warehouse's goods receipts. For each shipment the match engine (`app/rules/match_engine.py`) compares what was billed with what was ordered and received, line by line, in **exact decimals**, and says what is wrong, what to pay and what to raise as a debit note. **A model never decides an amount.** The snapshot the engine reads is plain data, so you can read every number it used.
+```bash
+./run.sh ladder/step3/e_match.py
+```
+```
+PO-40002: route investigate, issues ['PRICE_MISMATCH']
+    billed 700,010.85   pay 678,300.00   debit note 21,710.85
+    - PRICE_MISMATCH: SKU-2201: billed ₹3306.77 per carton vs PO price ₹3100.00 (6.67% higher, tolerance 2.0%).
+    answer key expects ['PRICE_MISMATCH']: matches
+PO-40010: route auto_approve, issues none
+    billed 92,040.00   pay 92,040.00   debit note 0.00
+    answer key expects []: matches
+```
+**Notice:** the supplier billed 3,306.77 a carton for Assam Tea; the order says 3,100.00. That is 6.67% over a 2% tolerance, so the engine pays the order price, **678,300.00**, and raises a **debit note for 21,710.85**. The clean shipment needs no person at all. Both results agree with the answer key.
+
+**This is the answer to the question we started with** ("is the supplier asking for the right amount?") using a script of about 150 lines, one model call per paper and ordinary code for everything else. It runs only for you, on one laptop, and prints to a terminal.
+
+## What step 3 still cannot do
+- **Nobody else can see the result.** It is a printout on one laptop.
+- **There is nowhere to decide.** A person must approve a payment, and nothing here lets them.
+- **It reads papers one after another.** Month end brings thousands.
+
+Each of those is the reason for the next steps: an API, a database and a screen (step 4), a queue (step 5), investigating agents and approval by role (step 6).
+
+## Questions people ask
+- **Where is the AI in all this?** In two places only: copying a scanned page into text, and filling a form from text. Everything that decides (where a paper ends, what is valid, what belongs together, what to pay) is code you can read.
+- **Why does a second run print the same amounts?** Every model answer is saved by the file's fingerprint (`data/cache/`). Delete that folder to start again; the first run may differ in small ways, and the checks are there for exactly that.
+- **Is this the real system?** The real system is these same modules plus a database, a queue and agents. The last branch is the real project, unchanged.
+
+Next: `git switch build/step-4-api-db-screen` (coming)
