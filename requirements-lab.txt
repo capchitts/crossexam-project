@@ -1,0 +1,10 @@
+# Steps 0 to 3 need only these (the versions are the ones the full system uses).
+langchain==1.4.6
+langchain-core==1.6.12
+langchain-google-genai==4.4.2
+pydantic==2.14.1
+pypdf==6.21.1
+pypdfium2==5.14.0
+pandas==3.0.6
+openpyxl==3.1.5
+pillow==12.3.0
