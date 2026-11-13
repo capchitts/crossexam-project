@@ -16,3 +16,6 @@ web/dist/
 .claude/
 .DS_Store
 teaching/
+
+# Step 2 writes its results here; a committed copy would break the "second run is free" demo
+ladder/results.jsonl

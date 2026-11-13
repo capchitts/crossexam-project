@@ -2,12 +2,13 @@
 #   make setup      create .env from the template (then put your Gemini key in it)
 #   make up         build and start everything (web 8080, API 8000, Flower 5555)
 #   make demo-data  generate demo papers + matching master data   (N=10 shipments by default)
+#   make demo-fixed copy the exact demo papers from demo-data/ (same bytes as the course) and load master data
 #   make test       run the 25 tests with the scripted model: no key, no cost
 #   make eval       score the latest batch against the generator's ground truth
 #   make down       stop;  make reset  stop and delete all data
 N ?= 10
 
-.PHONY: setup up monitoring demo-data test eval down reset logs
+.PHONY: setup up monitoring demo-data demo-fixed test eval down reset logs
 setup:
 	@test -f .env && echo ".env already exists" || (cp .env.example .env && echo "Created .env: set GOOGLE_API_KEY in it")
 
@@ -39,6 +40,11 @@ logs:
 
 down:
 	docker compose down
+
+demo-fixed:
+	mkdir -p data/generated && cp -R demo-data/files demo-data/ground_truth.json demo-data/master.json data/generated/
+	docker compose run --rm -v "$(CURDIR)/data:/app/data" api python -m app.db.seed /app/data/generated/master.json
+	@echo "Now upload the files in data/generated/files from the web screen"
 
 reset:
 	docker compose down -v

@@ -179,8 +179,14 @@ def prometheus_metrics():
 @app.post("/batches")
 async def create_batch(files: list[UploadFile] = File(...), name: str = Form(""),
                        priority: Priority = Form(Priority.normal), u=Depends(user), db: Session = Depends(get_db)):
+    """FEATURE: upload. Accept many files at once, skip the ones we have already seen, and queue the rest.
+
+    Who calls it: the Upload page of the web screen, or a script (curl -F files=@invoice.pdf).
+    What it does NOT do: read the papers. Reading is slow and uses the AI model, so it is done later by workers.
+    """
     from app.workers.tasks import enqueue_document
 
+    # A "batch" is one upload: who sent it, when, and how urgent it is. The screen shows progress per batch.
     batch = Batch(name=name or f"Upload by {u['name']}", priority=priority, created_by=u["name"])
     db.add(batch)
     db.flush()
@@ -189,6 +195,7 @@ async def create_batch(files: list[UploadFile] = File(...), name: str = Form("")
     trace_id = current_trace_id()
     for f in files:
         data = await f.read()
+        # Fingerprint the file (SHA-256) and store it once. A file we already have comes back as "not new".
         doc, is_new = pipeline.ingest_file(db, batch, f.filename or "upload.bin", data)
         if is_new:
             doc.trace_id = trace_id
@@ -196,11 +203,13 @@ async def create_batch(files: list[UploadFile] = File(...), name: str = Form("")
         else:
             duplicates.append({"filename": f.filename, "existing_document_id": doc.id})
     if not created:
-        batch.status = "grouped"  # nothing new to process
+        batch.status = "grouped"  # every file was a repeat: there is nothing to process
     db.commit()
-    for doc_id in created:  # enqueue only after commit, so workers can see the rows
-        enqueue_document(doc_id, priority.value)
+    # Queue only AFTER the commit, so a worker that picks the task up can already see the rows in the database.
+    for doc_id in created:
+        enqueue_document(doc_id, priority.value)  # one task per new file, on the queue for this priority
     log.info("batch_created", files=len(files), new=len(created), duplicates=len(duplicates))
+    # The answer is immediate: how many files were accepted, and which were repeats. The reading happens in the background.
     return {"batch_id": batch.id, "accepted": len(created), "duplicate_files": duplicates}
 
 
@@ -279,15 +288,21 @@ class DecisionRequest(BaseModel):
 
 @app.post("/packs/{pack_id}/decisions")
 def decide(pack_id: str, body: DecisionRequest, u=Depends(user)):
-    """A person approves, edits or rejects the agent's held actions; the agent then resumes."""
+    """A person approves, edits or rejects the agent's held actions; the agent then resumes.
+
+    FEATURE: decide. The role of the caller (X-Role header) decides what is allowed:
+    above the approval limit only a finance manager may approve.
+    """
     from app.workers.tasks import resume_pack
 
     try:
+        # The rule lives in code, not in a prompt: record_decisions checks the limit against the caller's role.
         resume = pipeline.record_decisions(pack_id, [d.model_dump() for d in body.decisions], u["name"], u["role"])
     except PermissionError as exc:
-        raise HTTPException(403, str(exc)) from exc
+        raise HTTPException(403, str(exc)) from exc  # e.g. "Amounts above the approval limit need the finance manager."
     except ValueError as exc:
-        raise HTTPException(409, str(exc)) from exc
+        raise HTTPException(409, str(exc)) from exc  # e.g. the pack was already decided
+    # Put the agent back to work on the urgent queue: it continues from its saved checkpoint, on any worker.
     resume_pack.apply_async((pack_id, resume), queue="agent.urgent")
     return {"queued": True}
 
