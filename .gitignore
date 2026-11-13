@@ -1,0 +1,7 @@
+# secrets and local state: never commit these
+.env
+data/
+__pycache__/
+*.pyc
+.DS_Store
+ladder/results.jsonl
