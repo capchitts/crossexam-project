@@ -90,3 +90,27 @@ First run 15 seconds for the whole command; second run 3 seconds. Eleven papers,
 ```
 `checks: ok`. Nothing looks at the PO number. Plain code only catches what someone wrote a rule for.
 **Try it:** in `app/rules/validation.py`, function `_invoice`, add one check so that a PO number that is not `PO-` and five digits gives `invalid:po_number`. In this repository `run.sh` mounts the whole folder, so your edit is used straight away. Run `--bad-po` again. (`git restore app/rules/validation.py` undoes it.)
+
+---
+
+## 3d. Put a shipment's papers together (`git checkout build/step-3d-group`)
+Each paper carries identifiers. **Strong keys** (a PO number, an e-way bill number, the supplier plus the invoice number, a batch number) link papers automatically: two papers that share one belong together. A **vehicle number is a weak key** (one lorry carries many shipments a month), so it is shown as a hint and never used to group. Identifiers are **normalised** first, so spelling and spacing differences do not split a shipment. This is plain code (`app/services/grouping.py`, the same union-find the full system uses). No model is called.
+```bash
+./run.sh ladder/step3/d_group.py
+```
+```
+Shipment 1: PO PO-40002   6 papers
+    invoice              0002_bundle_scan.pdf   strong keys: ['ewb:742795434833', 'inv:27UMYCJ2170J1ZQ:SI262756132', 'po:PO-40002']
+    packing_list         0002_bundle_scan.pdf   strong keys: ['batch:B17F569', 'batch:B43J529', 'inv:27UMYCJ2170J1ZQ:SI262756132', 'po:PO-40002']
+    lorry_receipt        0002_bundle_scan.pdf   strong keys: ['inv:27UMYCJ2170J1ZQ:SI262756132']
+    quality_certificate  0002_coa_1.pdf         strong keys: ['batch:B43J529']
+    quality_certificate  0002_coa_2.pdf         strong keys: ['batch:B17F569']
+    eway_bill            0002_ewaybill.pdf      strong keys: ['ewb:742795434833', 'inv:27UMYCJ2170J1ZQ:SI262756132']
+    vehicle written as ['KA28 JQ 4940'] -> one vehicle after normalising: ['KA28JQ4940']
+Shipment 2: PO PO-40010   5 papers
+    ...
+    vehicle written as ['KL19 KI 5987', 'KL19KI5987'] -> one vehicle after normalising: ['KL19KI5987']
+```
+**Notice:** the lorry receipt shares no PO number with the invoice, and a certificate shares only a batch number. They still end up in the same shipment, linked through a chain: lorry receipt, invoice number, invoice, PO. Eleven papers from nine files become **two shipments, 6 and 5 papers**. And the one lorry written two ways (`KL19 KI 5987` and `KL19KI5987`) is one vehicle after normalising.
+
+**A doubt worth saying out loud:** *"Why not group by vehicle? It is on three papers."* Because one lorry carries many shipments in a month. A weak key as a hint is fine; as a rule it would merge unrelated shipments.
