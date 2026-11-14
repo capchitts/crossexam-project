@@ -18,24 +18,24 @@ graph LR
     S0 --> S1["Step 1<br/>One agent"]
     S1 --> S2["Step 2<br/>Three small fixes"]
     S2 --> S3["Step 3<br/>Plain code around the model"]
-    S3 -.-> S4["Step 4<br/>API, database, screen"]
-    S4 -.-> S5["Step 5<br/>Queue"]
-    S5 -.-> S6["Step 6<br/>Agents + approval"]
-    S6 -.-> S7["Step 7<br/>Seeing inside"]
-    S7 -.-> S8["Step 8<br/>Cloud"]
+    S3 --> S4["Step 4<br/>API, database, screen"]
+    S4 --> S5["Step 5<br/>Queue"]
+    S5 --> S6["Step 6<br/>Agents + approval"]
+    S6 --> S7["Step 7<br/>Seeing inside"]
+    S7 --> S8["Step 8<br/>Cloud (validated, not run)"]
     S3 --> MAIN(["main<br/>the finished system"])
-    S8 -.-> MAIN
+    S8 --> MAIN
     style MAP fill:#2459A6,stroke:#173F78,color:#fff
     style MAIN fill:#0F1B2D,stroke:#0F1B2D,color:#fff
 ```
-Solid arrows and boxes exist today, as real branches you can check out. Dashed arrows and pale boxes are the plan: not built yet, so there is no branch for them and nothing to run.
+Every step, 0 through 8, is a real branch you can check out today. Step 8 is the one exception worth naming here too: its code is real and validated, but nothing in it was ever run against an actual cloud project (see its own `README.md`).
 
 ## Start here
 ```bash
 git clone https://github.com/mayank953/crossexam-project.git
 cd crossexam-project
 git switch build/step-0-start       # the setup
-make setup                          # creates .env: put your Gemini key in it (only steps 1 to 3 call a model)
+make setup                          # creates .env: put your Gemini key in it (every step from 1 onward calls a model)
 make check                          # proves Docker, the papers and (optionally) the key work
 ```
 Then move one step at a time: `git switch build/step-1-one-agent`, read that branch's `README.md` and `STEP.md`, run what it says.
@@ -50,11 +50,11 @@ To go back to the full project at any point: `git switch main`.
 | [`build/step-1-one-agent`](https://github.com/mayank953/crossexam-project/tree/build/step-1-one-agent) | Tomás types every invoice by hand. | One LangChain agent reads one paper and fills in a form. | Yes | **built** |
 | [`build/step-2-three-fixes`](https://github.com/mayank953/crossexam-project/tree/build/step-2-three-fixes) | Other papers get the wrong form, and a repeat does all the work again. | A kind of paper, a fingerprint, saved results. No new part. | Yes | **built** |
 | [`build/step-3-plain-code`](https://github.com/mayank953/crossexam-project/tree/build/step-3-plain-code) | A bundle holds several papers, and nothing compares the invoice with the order. | Plain code around the model: read cheaply, split a bundle, check a form, group a shipment, match exactly. | Yes (only for two of its five moves) | **built** |
-| `build/step-4-api-db-screen` | The answer is a printout on one laptop; nobody else can see or decide. | FastAPI, PostgreSQL, the React screen. | — | coming |
-| `build/step-5-queue` | Month end brings thousands of papers; one worker can die mid-batch. | Celery and Redis. | — | coming |
-| `build/step-6-agents-approval` | Finding a problem is not deciding what to pay. | Investigating agents, approval by role. | — | coming |
-| `build/step-7-see-inside` | When it looks stuck, nobody can say why. | Flower, metrics, traces, LangSmith. | — | coming |
-| `build/step-8-cloud` | It runs on one laptop. | Terraform, Kubernetes. | — | coming, not run |
+| [`build/step-4-api-db-screen`](https://github.com/mayank953/crossexam-project/tree/build/step-4-api-db-screen) | The answer is a printout on one laptop; nobody else can see or decide. | A Postgres database, a FastAPI service, a one-page screen. | Yes | **built** |
+| [`build/step-5-queue`](https://github.com/mayank953/crossexam-project/tree/build/step-5-queue) | Month end brings thousands of papers; one worker can die mid-batch. | Celery and Redis, two worker pools. | Yes | **built** |
+| [`build/step-6-agents-approval`](https://github.com/mayank953/crossexam-project/tree/build/step-6-agents-approval) | Finding a problem is not deciding what to pay. | A real agent's finding, role-gated approval. | Yes | **built** |
+| [`build/step-7-see-inside`](https://github.com/mayank953/crossexam-project/tree/build/step-7-see-inside) | When it looks stuck, nobody can say why. | Structured logs, real metrics, Flower; Prometheus/Grafana opt in. | Yes | **built** |
+| [`build/step-8-cloud`](https://github.com/mayank953/crossexam-project/tree/build/step-8-cloud) | It runs on one laptop. | Terraform and Kubernetes, validated offline. | No | **built, not run against a cloud project** |
 
 Smaller moves inside step 3 are **tags**, each one a single, runnable move: `build/step-3a-read-cheaply`, `build/step-3b-split`, `build/step-3c-check`, `build/step-3d-group`, `build/step-3e-match`. Check one out with `git checkout build/step-3c-check` (a tag, not a branch, so it leaves you with a detached `HEAD` — that is expected; `git switch build/step-3-plain-code` returns you to the branch).
 
@@ -62,7 +62,7 @@ Smaller moves inside step 3 are **tags**, each one a single, runnable move: `bui
 
 - **Docker Desktop**, running. Nothing else is installed on your machine; every step builds and runs inside a container.
 - **About a minute** the first time you run `make check` on a new branch, while the image builds. Every run after that starts at once.
-- **A Gemini API key**, only from step 1 onward, pasted into `.env` (created by `make setup`, and git-ignored — it is never committed). Steps 1 to 3 together cost a fraction of a rupee to run once.
+- **A Gemini API key**, only from step 1 onward, pasted into `.env` (created by `make setup`, and git-ignored — it is never committed). Steps 1 to 7 together cost a fraction of a rupee to run once; model answers are cached by file fingerprint, so running a step again costs nothing.
 - **No cloud account, no billing, no internet access beyond the model call.** Everything else runs entirely on your machine.
 
 ## Rules we keep
