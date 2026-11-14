@@ -1,6 +1,6 @@
 # CrossExam -- Step 4: a shared database, an API and a screen
 
-Step 4 of 8 in the branch-by-branch build. &larr; [Step 3](https://github.com/mayank953/crossexam-project/tree/build/step-3-plain-code) &middot; [Map](https://github.com/mayank953/crossexam-project/tree/build/map) &middot; Step 5 (coming) &middot; [The finished system (main)](https://github.com/mayank953/crossexam-project/tree/main)
+Step 4 of 8 in the branch-by-branch build. &larr; [Step 3](https://github.com/mayank953/crossexam-project/tree/build/step-3-plain-code) &middot; [Map](https://github.com/mayank953/crossexam-project/tree/build/map) &middot; Step 5 &middot; [The finished system (main)](https://github.com/mayank953/crossexam-project/tree/main)
 
 ## Why this step exists
 
@@ -62,10 +62,10 @@ You can also upload through the screen itself: drag any files from `demo-data/fi
 
 ## What it still gets wrong
 
-The answer now lives in a database and anyone with the screen's URL can see it -- but nobody can **approve or reject** it, and a big upload simply makes the request wait longer, because everything still runs inside the one API request that received it. Month end brings thousands of papers at once; this step would just make that one request very slow. `build/step-5-queue` (coming) answers the second problem with workers that share the work; `build/step-6-agents-approval` (coming) answers the first.
+The answer now lives in a database and anyone with the screen's URL can see it -- but nobody can **approve or reject** it, and a big upload simply makes the request wait longer, because everything still runs inside the one API request that received it. Month end brings thousands of papers at once; this step would just make that one request very slow. `build/step-5-queue` answers the second problem with workers that share the work; `build/step-6-agents-approval` answers the first.
 
 ## Go deeper
 
 The full walkthrough -- what each new file does, a real `curl` upload, and what the database rows look like -- is in [`STEP.md`](STEP.md).
 
-Next: `git switch build/step-5-queue` (coming)
+Next: `git switch build/step-5-queue`
