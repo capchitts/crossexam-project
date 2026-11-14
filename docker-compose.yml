@@ -1,22 +1,23 @@
-# Step 5's stack: Postgres, Redis, one API container and two worker pools (reader, agent).
-#   make up      build and start everything, on ports that will not clash with step 4 or `main`
-#   make demo    upload PO-40002 and PO-40010 through the real API -- the request returns at once
+# Step 6's stack: Postgres, Redis, one API container and two worker pools (reader, agent). The
+# agent worker is also where the new supervisor agent runs (match.py, supervisor.py).
+#   make up      build and start everything, on ports that will not clash with steps 4, 5 or `main`
+#   make demo    upload PO-40002 and PO-40010 through the real API
 #   make down    stop;  make reset  stop and delete the database
 #
-# Ports are shifted again (5434, 6380, 8011) so steps 4 and 5 and the full stack on `main` can all
-# exist on this machine without any of them touching another's database, broker or port.
-name: crossexam-step5
+# Ports are shifted again (5435, 6381, 8012) so every earlier step and the full stack on `main` can
+# all exist on this machine without any of them touching another's database, broker or port.
+name: crossexam-step6
 
 x-app: &app
   build: .
-  image: crossexam-step5:lab
+  image: crossexam-step6:lab
   env_file: .env
   environment:
     DATABASE_URL: postgresql+psycopg://crossexam:crossexam@postgres:5432/crossexam
     REDIS_URL: redis://redis:6379/0
     ENABLE_PGVECTOR: "0"
     LOCAL_STORAGE_DIR: /app/data/storage
-    PYTHONPATH: /app/ladder/step5:/app
+    PYTHONPATH: /app/ladder/step6:/app
   volumes:
     - .:/app
   working_dir: /app
@@ -31,7 +32,7 @@ services:
       POSTGRES_USER: crossexam
       POSTGRES_PASSWORD: crossexam
       POSTGRES_DB: crossexam
-    ports: ["5434:5432"]
+    ports: ["5435:5432"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U crossexam"]
       interval: 3s
@@ -39,7 +40,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    ports: ["6380:6379"]
+    ports: ["6381:6379"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 3s
@@ -47,8 +48,8 @@ services:
 
   api:
     <<: *app
-    command: ["uvicorn", "api:app", "--app-dir", "ladder/step5", "--host", "0.0.0.0", "--port", "8000"]
-    ports: ["8011:8000"]
+    command: ["uvicorn", "api:app", "--app-dir", "ladder/step6", "--host", "0.0.0.0", "--port", "8000"]
+    ports: ["8012:8000"]
 
   worker-reader:
     <<: *app
