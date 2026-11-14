@@ -1,0 +1,115 @@
+"""The screen: one page, no build step. It calls the same three routes everyone else here calls
+(POST /batches, GET /batches, GET /batches/{id}/shipments) -- there is no shortcut it takes that a curl
+command could not also take."""
+
+PAGE = """<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CrossExam -- step 4: the screen</title>
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0; background: #f6f1e7; color: #1c2a3a; font: 15px/1.5 -apple-system, Segoe UI, Roboto, sans-serif; }
+  header { padding: 20px 28px; background: #0f1b2d; color: #fff; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 600; }
+  header p { margin: 4px 0 0; font-size: 13px; color: #9fb3c8; }
+  main { max-width: 900px; margin: 0 auto; padding: 24px 28px 60px; }
+  section { background: #fff; border: 1px solid #e3dac8; border-radius: 10px; padding: 18px 20px; margin-bottom: 20px; }
+  h2 { font-size: 14px; text-transform: uppercase; letter-spacing: .04em; color: #6b5b3e; margin: 0 0 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid #efe8d8; vertical-align: top; }
+  th { color: #6b5b3e; font-weight: 600; font-size: 12px; text-transform: uppercase; }
+  .route-auto_approve { color: #1a7a4c; font-weight: 600; }
+  .route-investigate, .route-human_review { color: #a3401b; font-weight: 600; }
+  button, input[type=submit] {
+    background: #2459a6; color: #fff; border: none; border-radius: 6px; padding: 8px 16px;
+    font-size: 14px; cursor: pointer;
+  }
+  input[type=file] { display: block; margin: 10px 0; }
+  .muted { color: #7a7265; font-size: 13px; }
+  .pill { display: inline-block; background: #eef1f6; border-radius: 10px; padding: 1px 8px; font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>CrossExam &mdash; step 4: a shared database, an API and a screen</h1>
+  <p>Everything below comes from <code>GET /batches</code> and <code>GET /batches/&lt;id&gt;/shipments</code>. No step is skipped: upload runs
+     read &rarr; split &rarr; fill &rarr; check &rarr; group &rarr; match, exactly as step 3 did it on the command line.</p>
+</header>
+<main>
+  <section>
+    <h2>Upload papers</h2>
+    <form id="upload">
+      <input type="file" name="files" multiple required>
+      <input type="submit" value="Upload and process">
+    </form>
+    <p class="muted" id="upload-status"></p>
+  </section>
+  <section>
+    <h2>Batches</h2>
+    <table id="batches"><thead><tr><th>Name</th><th>Status</th><th>Created</th><th></th></tr></thead><tbody></tbody></table>
+  </section>
+  <section>
+    <h2 id="shipments-title">Shipments</h2>
+    <table id="shipments">
+      <thead><tr><th>PO</th><th>Route</th><th>Billed</th><th>Pay</th><th>Debit note</th><th>Finding</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+</main>
+<script>
+async function loadBatches() {
+  const rows = await (await fetch('/batches')).json();
+  const body = document.querySelector('#batches tbody');
+  body.innerHTML = '';
+  for (const b of rows) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${b.name}</td><td><span class="pill">${b.status}</span></td>` +
+      `<td class="muted">${new Date(b.created_at).toLocaleString()}</td>` +
+      `<td><button data-id="${b.id}">See shipments</button></td>`;
+    body.appendChild(tr);
+  }
+  body.querySelectorAll('button').forEach(btn => btn.onclick = () => loadShipments(btn.dataset.id));
+  if (rows.length) loadShipments(rows[0].id);
+}
+
+async function loadShipments(batchId) {
+  const rows = await (await fetch(`/batches/${batchId}/shipments`)).json();
+  document.querySelector('#shipments-title').textContent = `Shipments for this batch (${rows.length})`;
+  const body = document.querySelector('#shipments tbody');
+  body.innerHTML = '';
+  for (const p of rows) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${p.po_number || '(no PO found)'}</td>` +
+      `<td class="route-${p.route}">${p.route || '-'}</td>` +
+      `<td>${Number(p.invoice_total).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>` +
+      `<td>${Number(p.payable_amount).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>` +
+      `<td>${Number(p.debit_note_amount).toLocaleString('en-IN', {minimumFractionDigits: 2})}</td>` +
+      `<td class="muted">${p.finding}</td>`;
+    body.appendChild(tr);
+  }
+}
+
+document.querySelector('#upload').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const status = document.querySelector('#upload-status');
+  const files = e.target.files.files;
+  if (!files.length) return;
+  const form = new FormData();
+  for (const f of files) form.append('files', f);
+  status.textContent = `Reading ${files.length} paper(s) -- this calls the model, so it can take a few seconds...`;
+  const res = await fetch('/batches', { method: 'POST', body: form });
+  if (!res.ok) { status.textContent = `Something went wrong (${res.status}). See the API logs.`; return; }
+  const body = await res.json();
+  status.textContent = body.duplicate_files.length
+    ? `${body.accepted} new, ${body.duplicate_files.length} already seen before (same file, no new work): ${body.duplicate_files.join(', ')}`
+    : `${body.accepted} new paper(s) read, split, filled, checked, grouped and matched.`;
+  loadBatches();
+});
+
+loadBatches();
+setInterval(loadBatches, 5000);
+</script>
+</body>
+</html>"""

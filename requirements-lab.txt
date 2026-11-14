@@ -1,4 +1,6 @@
-# Steps 0 to 3 need only these (the versions are the ones the full system uses).
+# Steps 0 to 3 needed only these. Step 4 adds a database, an API and a screen (below) -- the versions
+# are the ones the full system uses. ENABLE_PGVECTOR=0 means the pgvector Python package and Postgres
+# extension are not needed yet: step 4 stores nothing that needs a vector column.
 langchain==1.4.6
 langchain-core==1.6.12
 langchain-google-genai==4.4.2
@@ -8,3 +10,12 @@ pypdfium2==5.14.0
 pandas==3.0.6
 openpyxl==3.1.5
 pillow==12.3.0
+
+# Step 4: a shared database, an API and a screen.
+SQLAlchemy==2.1.5
+psycopg[binary,pool]==3.3.6
+psycopg-pool==3.3.3
+fastapi==0.156.4
+uvicorn[standard]==0.54.0
+python-multipart==0.0.32
+pydantic-settings==2.16.1

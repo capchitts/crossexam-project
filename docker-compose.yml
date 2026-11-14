@@ -1,0 +1,37 @@
+# Step 4's stack: Postgres plus one API container that also serves the screen.
+#   make up      build and start both, on ports that will not clash with the finished system on `main`
+#   make demo    load the 9 demo papers (PO-40002, PO-40010) straight into the database
+#   make down    stop;  make reset  stop and delete the database
+#
+# Ports are shifted by one (5433, 8010) so this can run next to the full stack on `main` without
+# either one touching the other's database or port.
+name: crossexam-step4
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: crossexam
+      POSTGRES_PASSWORD: crossexam
+      POSTGRES_DB: crossexam
+    ports: ["5433:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crossexam"]
+      interval: 3s
+      retries: 20
+
+  api:
+    build: .
+    image: crossexam-step4:lab
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://crossexam:crossexam@postgres:5432/crossexam
+      ENABLE_PGVECTOR: "0"
+      PYTHONPATH: /app
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: ["uvicorn", "api:app", "--app-dir", "ladder/step4", "--host", "0.0.0.0", "--port", "8000"]
+    ports: ["8010:8000"]
+    depends_on:
+      postgres: { condition: service_healthy }
