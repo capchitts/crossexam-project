@@ -5,3 +5,9 @@ __pycache__/
 *.pyc
 .DS_Store
 ladder/results.jsonl
+
+# terraform: provider binaries (hundreds of MB) and any real state/vars
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.*
+infra/terraform/terraform.tfvars

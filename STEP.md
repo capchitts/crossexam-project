@@ -1,76 +1,60 @@
-# Step 7: seeing inside
+# Step 8: cloud
 
-**What step 6 showed:** a real agent explaining a problem, and a real role-gated approval. Nothing about *how the work was moving* was visible -- not the queue, not a worker, not a single number.
+**What step 7 showed:** the whole system, visible -- logs, metrics, queue depth, a task history. Still one laptop.
 
-**The goal of this step:** make "is it stuck, or just busy?" answerable with a real number, not a guess.
+**The goal of this step:** write down what running it on a cluster would take, as real code, and check that code is correct -- without touching a real cloud account.
 
-| New file | What it does | Is it new logic? |
-|---|---|---|
-| `app/observability/logging.py`, `metrics.py`, `tracing.py` | Structured JSON logs, the real OpenTelemetry metric instruments, OTel tracing setup. | No -- the exact files from `main`. |
-| `monitoring/prometheus.yml`, `monitoring/grafana/...` | Scrape config and the stock dashboard. | No -- the exact files from `main`. |
-| `ladder/step7/tasks.py` | Binds ids to the logger and records the real metrics around `read_one` and `finalize_batch_task`. | The binding/recording calls are new; the task bodies are step 5/6's, unchanged. |
-| `ladder/step7/api.py` | Adds `/metrics`, `/readyz`, `/queues`. | New, each a few lines. |
+## What each Terraform file is for
 
-## Two separate places to look, on purpose
+| File | What it defines |
+|---|---|
+| `foundation.tf` | The VPC, a subnet with Private Service Access (so Cloud SQL and the cluster talk without public IPs), Cloud NAT (so pods can reach the internet to call Gemini), a Cloud Storage bucket for documents, the Artifact Registry repository for container images, and three Secret Manager secrets: the database password (generated), the Gemini key, and a LangSmith key placeholder. |
+| `gke.tf` | The GKE cluster itself, the `crossexam` namespace and its config map, and KEDA (installed by Helm) -- the autoscaler that watches queue depth instead of CPU, so a month-end backlog adds workers automatically. |
+| `iam.tf` | A single service account the workload runs as, scoped to exactly what it needs (pull images, write to the bucket, read the secrets, call Vertex AI) -- and separately, Workload Identity Federation for GitHub Actions, so `deploy.yml` can authenticate to Google Cloud with **no JSON key stored anywhere**. |
+| `data.tf`, `main.tf`, `ops.tf`, `outputs.tf`, `variables.tf` | Provider configuration, input variables (project id, region), and the outputs `deploy.yml` reads (the workload identity provider, the deployer service account). |
 
-`prometheus.yml` has two scrape jobs:
-```yaml
-- job_name: api
-  metrics_path: /metrics
-  static_configs: [{ targets: ["api:8000"] }]
-- job_name: workers
-  dns_sd_configs:
-    - names: [worker-reader, worker-agent]
-      type: A
-      port: 9100
-```
-This is main's own design, not something this step invented: the API and the two worker pools are separate Python processes, each with its own in-process metrics registry. A counter a worker increments is never visible on the API's `/metrics` -- it is visible on that worker's own port 9100. Prometheus scrapes both, which is how a dashboard sees the whole system; `curl`ing only `/metrics` on the API shows almost nothing, by design, not by bug.
+## What each Kubernetes overlay is for
+
+| Overlay | What it holds |
+|---|---|
+| `base/` | The namespace, service accounts, and `secrets.yaml` -- references to the Secret Manager secrets above, mounted as files (see `scripts/docker-entrypoint.sh`'s own comment on this: a deployment gives a secret a mount even when that deployment does not use it, because a mount fails on a secret with no version). |
+| `app/` | `api.yaml`, `web.yaml`, `workers.yaml` (the reader and agent pools, the ones step 5 first ran locally), `flower.yaml`, and `cronjobs.yaml` (the periodic sweeps step 5's `reap_stale` and step 7's nightly quality check would run as, on a real cluster). |
+| `migrate/` | A one-shot `Job` that runs the database migration before the app pods start. |
+| `public/` | An `Ingress`, optional (`PUBLIC_WEB=true` in `deploy.yml`), for a demo that needs the web screen reachable from outside the cluster. |
 
 ## Run it
 
 ```bash
-make up
-make demo
+make validate
 ```
-Real numbers, read straight from the running stack after one 9-file upload:
 ```
-curl http://localhost:9101/ | grep crossexam_documents_processed
-  crossexam_documents_processed_total{doc_type="quality_certificate",outcome="read"} 3.0
-  crossexam_documents_processed_total{doc_type="eway_bill",outcome="read"} 2.0
-  crossexam_documents_processed_total{doc_type="invoice",outcome="read"} 2.0
-  crossexam_documents_processed_total{doc_type="packing_list",outcome="read"} 2.0
-  crossexam_documents_processed_total{doc_type="lorry_receipt",outcome="read"} 2.0
+cd infra/terraform && terraform init -backend=false -input=false && terraform validate && terraform fmt -check -diff
+...
+Terraform has been successfully initialized!
+Success! The configuration is valid.
 
-curl http://localhost:9102/ | grep crossexam_packs_routed
-  crossexam_packs_routed_total{route="investigate"} 1.0
-  crossexam_packs_routed_total{route="auto_approve"} 1.0
-
-curl http://localhost:8013/queues
-  {"reader.urgent":0,"reader.normal":0,"reader.bulk":0,"agent.urgent":0,"agent.normal":0,"agent.bulk":0}
+--- infra/k8s/app ---
+renders OK
+--- infra/k8s/base ---
+renders OK
+--- infra/k8s/migrate ---
+renders OK
+--- infra/k8s/public ---
+renders OK
 ```
-11 papers from 9 files (`0002_bundle_scan.pdf` alone splits into 3), two shipments, both numbers agreeing with every earlier step. A real structured log line, from the same run:
-```json
-{"papers": 1, "remaining_in_batch": 0, "event": "read_one done", "task": "read_one",
- "batch_id": "ccd25bf9-...", "document_id": "18e2927c-...", "filename": "0010_lr_scan.pdf",
- "level": "info", "timestamp": "2026-11-14T18:56:15.140013Z", "severity": "INFO"}
-```
+`-backend=false` means Terraform never tries to reach a remote state backend; `terraform validate` only checks that the configuration is internally consistent (types, references, required arguments) -- it needs no credentials and makes no API calls. `kubectl kustomize` only reads and merges local YAML files; it never contacts a cluster.
 
-## Flower, for real
+## A doubt worth saying out loud
 
-Open **http://localhost:5556/tasks**. A real run shows ten real rows: nine `tasks.read_one` (one per file, on `worker-reader`, 16-171ms each) and one `tasks.finalize_batch_task` (on `worker-agent`, 1.92s -- this one calls the supervisor agent, so it is the slow one). A screenshot of this exact run is in `teaching/`'s reference material for this step.
-
-## Prometheus and Grafana, opt in
-
-```bash
-make monitoring
-```
-This downloads `prom/prometheus` and `grafana/grafana` the first time -- about 0.6 GB together -- which is why it is not part of `make up`. main's own `docker-compose.yml` gates these two services behind the identical `--profile monitoring`, for the identical reason, stated in its own first-line comment. Grafana opens at `http://localhost:3001` with the dashboard `monitoring/grafana/dashboards/crossexam.json` already provisioned, reading from Prometheus at `http://localhost:9091`.
+*"If nothing was deployed, how do we know this would actually work on a real cluster?"* We don't, fully -- and this step says so rather than pretending otherwise. `terraform validate` catches wrong types, missing required fields, and broken references between resources; it does **not** catch a wrong IAM permission, a quota limit, or a region that doesn't support a feature, any of which only a real `terraform plan` against a real project would surface. The honest claim here is narrower than main's own README perhaps implies at a glance: this code is internally consistent, not proven on Google Cloud.
 
 ## What was not run
 
-- **LangSmith** (prompt-level and tool-call detail inside the supervisor agent's own run) needs its own API key in `.env`. It was not set for this step, so LangSmith was not run; `otel_exporter` stays `none`, so OpenTelemetry tracing was not run either, and no trace backend was contacted.
-- **The Grafana dashboard with a real backlog behind it.** The dashboard shown is the stock one copied from `main`; nobody has pointed it at a genuinely large, slow batch to see whether its panels are the right ones to be looking at.
+- `terraform plan` / `apply` -- needs a real project, billing, and `terraform.tfvars` (the example file shows the shape; no real one exists in this branch).
+- `kubectl apply --dry-run=client` -- needs a live cluster to discover API groups against, even for a dry run; not available without one.
+- `.github/workflows/*.yml` through `actionlint` or a real GitHub Actions run.
+- The GKE cluster, KEDA autoscaling a real backlog, the ingress serving real traffic -- everything these files describe, running.
 
 ## What it still gets wrong
 
-A refused approval (step 6's 403) still writes nothing anywhere -- there is no metric or log line for "someone tried and was stopped." And everything so far still runs on one laptop, with no record of *what it would take* to run somewhere else. `build/step-8-cloud` (coming) is where that gets written down as code -- not run, but validated.
+Nothing, by this step's own stated goal -- but the goal itself is narrow: *this code is valid*, not *this system runs the same way on a cluster as it does on one laptop*. That gap is real, and closing it needs the thing this step deliberately does not do: an actual cloud project, a yes, and someone watching the bill.

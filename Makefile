@@ -1,8 +1,17 @@
-.PHONY: setup check up monitoring demo down reset logs kill-reader
+.PHONY: setup check up monitoring demo down reset logs kill-reader validate-terraform validate-k8s validate
 setup:  ## create .env from the template (never overwrites an existing one)
 	@test -f .env && echo ".env already exists" || (cp .env.example .env && echo "Created .env: put your Gemini key in it")
 check:  ## prove Docker, the papers and (if set) the key work
 	./run.sh check.py
+
+# --- step 8: cloud (validate only -- nothing below touches Google Cloud) ---------------------------
+validate-terraform:  ## terraform init (no backend), validate and fmt check -- no cloud credentials used or needed
+	cd infra/terraform && terraform init -backend=false -input=false && terraform validate && terraform fmt -check -diff
+validate-k8s:  ## render every kustomize overlay locally -- no cluster contacted
+	@for d in infra/k8s/app infra/k8s/base infra/k8s/migrate infra/k8s/public; do \
+	  echo "--- $$d ---"; kubectl kustomize $$d > /dev/null && echo "renders OK"; \
+	done
+validate: validate-terraform validate-k8s  ## everything this step checks, offline, in one command
 
 # --- step 7: seeing inside -------------------------------------------------------------------------
 up:  ## build and start Postgres, Redis, the API/screen, both worker pools and Flower
