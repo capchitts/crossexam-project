@@ -13,7 +13,7 @@ Built on **LangChain v1** (`create_agent` + middleware), **Celery**, **Redis**, 
 ```mermaid
 graph LR
     MAIN(["main<br/>clone and build here"]) -.->|"also taught as<br/>one branch per step"| MAP["build/map"]
-    MAP --> S0[Step 0] --> S1[Step 1] --> S2[Step 2] --> S3[Step 3] -.-> S48["Steps 4-8<br/>(coming)"]
+    MAP --> S0[Step 0] --> S1[Step 1] --> S2[Step 2] --> S3[Step 3] --> S4[Step 4] --> S5[Step 5] --> S6[Step 6] --> S7[Step 7] --> S8["Step 8<br/>(validated, not run)"]
     style MAIN fill:#0F1B2D,stroke:#0F1B2D,color:#fff
 ```
 
