@@ -1,6 +1,6 @@
 # CrossExam -- Step 5: a queue
 
-Step 5 of 8 in the branch-by-branch build. &larr; [Step 4](https://github.com/mayank953/crossexam-project/tree/build/step-4-api-db-screen) &middot; [Map](https://github.com/mayank953/crossexam-project/tree/build/map) &middot; Step 6 (coming) &middot; [The finished system (main)](https://github.com/mayank953/crossexam-project/tree/main)
+Step 5 of 8 in the branch-by-branch build. &larr; [Step 4](https://github.com/mayank953/crossexam-project/tree/build/step-4-api-db-screen) &middot; [Map](https://github.com/mayank953/crossexam-project/tree/build/map) &middot; Step 6 &middot; [The finished system (main)](https://github.com/mayank953/crossexam-project/tree/main)
 
 ## Why this step exists
 
@@ -70,10 +70,10 @@ A real run, on a 42-paper upload: the reader worker was killed at `23:17:58`, re
 
 ## What it still gets wrong
 
-A paper is still either auto-approved or sent to `needs_review` by the same plain-code match engine step 3 and 4 used -- nothing **decides** what to do about a problem, and nothing routes it to the right person. And once work is queued, there is still no way to see *how much* is queued, which worker is doing what, or why a batch is slow. `build/step-6-agents-approval` (coming) answers the first; `build/step-7-see-inside` (coming) answers the second.
+A paper is still either auto-approved or sent to `needs_review` by the same plain-code match engine step 3 and 4 used -- nothing **decides** what to do about a problem, and nothing routes it to the right person. And once work is queued, there is still no way to see *how much* is queued, which worker is doing what, or why a batch is slow. `build/step-6-agents-approval` answers the first; `build/step-7-see-inside` answers the second.
 
 ## Go deeper
 
 The full walkthrough -- the real task code, both worker logs, and the worker-kill timing above -- is in [`STEP.md`](STEP.md).
 
-Next: `git switch build/step-6-agents-approval` (coming)
+Next: `git switch build/step-6-agents-approval`

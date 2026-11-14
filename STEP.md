@@ -55,4 +55,4 @@ Twelve seconds from the kill to a finished batch -- under the 20-second visibili
 
 ## What it still gets wrong
 
-A clean shipment is auto-approved and a problem shipment is marked `needs_review` -- but nothing decides *what to do* about the problem, and nothing routes it to the one person who may approve it. And now that work moves through a queue, there is no way to see how much is queued, which worker is doing what, or why a batch that should take seconds is taking minutes. `build/step-6-agents-approval` (coming) answers the first; `build/step-7-see-inside` (coming) answers the second.
+A clean shipment is auto-approved and a problem shipment is marked `needs_review` -- but nothing decides *what to do* about the problem, and nothing routes it to the one person who may approve it. And now that work moves through a queue, there is no way to see how much is queued, which worker is doing what, or why a batch that should take seconds is taking minutes. `build/step-6-agents-approval` answers the first; `build/step-7-see-inside` answers the second.
