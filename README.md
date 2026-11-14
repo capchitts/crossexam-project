@@ -1,6 +1,6 @@
 # CrossExam -- Step 7: seeing inside
 
-Step 7 of 8 in the branch-by-branch build. &larr; [Step 6](https://github.com/mayank953/crossexam-project/tree/build/step-6-agents-approval) &middot; [Map](https://github.com/mayank953/crossexam-project/tree/build/map) &middot; Step 8 (coming) &middot; [The finished system (main)](https://github.com/mayank953/crossexam-project/tree/main)
+Step 7 of 8 in the branch-by-branch build. &larr; [Step 6](https://github.com/mayank953/crossexam-project/tree/build/step-6-agents-approval) &middot; [Map](https://github.com/mayank953/crossexam-project/tree/build/map) &middot; Step 8 &middot; [The finished system (main)](https://github.com/mayank953/crossexam-project/tree/main)
 
 ## Why this step exists
 
@@ -73,10 +73,10 @@ Open **http://localhost:5556** (Flower) for the real task history -- every `read
 
 ## What it still gets wrong
 
-A refused approval from step 6 still writes nothing anywhere, queue depth and metrics are not yet wired to alert anyone, and this step's own dashboard is the stock one copied from `main` -- nobody has looked at it with a real month-end backlog behind it. And everything so far still runs on one laptop. `build/step-8-cloud` (coming) is where that changes -- or rather, where main's own files for it are validated, since nothing in step 8 actually reaches a cloud project.
+A refused approval from step 6 still writes nothing anywhere, queue depth and metrics are not yet wired to alert anyone, and this step's own dashboard is the stock one copied from `main` -- nobody has looked at it with a real month-end backlog behind it. And everything so far still runs on one laptop. `build/step-8-cloud` is where that changes -- or rather, where main's own files for it are validated, since nothing in step 8 actually reaches a cloud project.
 
 ## Go deeper
 
 The full walkthrough -- the real metric names, a Flower screenshot, and why worker metrics and API metrics are two separate endpoints -- is in [`STEP.md`](STEP.md).
 
-Next: `git switch build/step-8-cloud` (coming)
+Next: `git switch build/step-8-cloud`

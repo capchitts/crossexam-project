@@ -73,4 +73,4 @@ This downloads `prom/prometheus` and `grafana/grafana` the first time -- about 0
 
 ## What it still gets wrong
 
-A refused approval (step 6's 403) still writes nothing anywhere -- there is no metric or log line for "someone tried and was stopped." And everything so far still runs on one laptop, with no record of *what it would take* to run somewhere else. `build/step-8-cloud` (coming) is where that gets written down as code -- not run, but validated.
+A refused approval (step 6's 403) still writes nothing anywhere -- there is no metric or log line for "someone tried and was stopped." And everything so far still runs on one laptop, with no record of *what it would take* to run somewhere else. `build/step-8-cloud` is where that gets written down as code -- not run, but validated.
