@@ -8,7 +8,14 @@ Built on **LangChain v1** (`create_agent` + middleware), **Celery**, **Redis**, 
 
 > Kaveri Distributors, its suppliers and every number in the demo data are fictional.
 
-> **Learning it step by step?** Start with [docs/STEP-BY-STEP-BUILD.md](docs/STEP-BY-STEP-BUILD.md): eight steps, from one agent in one file to the full system, using the exact demo papers in `demo-data/`.
+> **Learning it step by step?** Start with [docs/STEP-BY-STEP-BUILD.md](docs/STEP-BY-STEP-BUILD.md): eight steps, from one agent in one file to the full system, using the exact demo papers in `demo-data/`. **This folder, on `main`, is always the complete, finished system** -- clone and build on it here. There is also a **branch-per-step** version of the same eight steps, for recording and following along one piece at a time: see [`build/map`](https://github.com/mayank953/crossexam-project/tree/build/map). Switch to a `build/*` branch only to study one step in isolation; `git switch main` always brings you back here.
+
+```mermaid
+graph LR
+    MAIN(["main<br/>clone and build here"]) -.->|"also taught as<br/>one branch per step"| MAP["build/map"]
+    MAP --> S0[Step 0] --> S1[Step 1] --> S2[Step 2] --> S3[Step 3] -.-> S48["Steps 4-8<br/>(coming)"]
+    style MAIN fill:#0F1B2D,stroke:#0F1B2D,color:#fff
+```
 
 ---
 

@@ -4,6 +4,8 @@ CrossExam is built up in eight steps. Each step starts from a problem we saw, an
 
 Load the exact demo papers first: `make demo-fixed` (see `demo-data/README.md`).
 
+> **Two ways to follow this.** Read the table below and open the files it points to, right here on `main` -- that is what this page is for. Or check out the same eight steps **one branch at a time**, starting from [`build/map`](https://github.com/mayank953/crossexam-project/tree/build/map): each branch is a complete, runnable checkout at exactly that point, with its own `README.md` and `STEP.md`. Steps 1 and 2 as plain files (`ladder/`) and the `build/step-1-one-agent` / `build/step-2-three-fixes` branches are the same two steps; the branches additionally isolate steps 3a-3e as their own tags.
+
 | Step | The problem we saw | What we add | Where to look | Try it |
 |---|---|---|---|---|
 | 1 | Nothing yet: can a model read one paper? | One LangChain agent and a form to fill | `ladder/step1_one_agent.py` | `ladder/README.md` |
