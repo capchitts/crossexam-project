@@ -1,11 +1,28 @@
-# Step 4's stack: Postgres plus one API container that also serves the screen.
-#   make up      build and start both, on ports that will not clash with the finished system on `main`
-#   make demo    load the 9 demo papers (PO-40002, PO-40010) straight into the database
+# Step 5's stack: Postgres, Redis, one API container and two worker pools (reader, agent).
+#   make up      build and start everything, on ports that will not clash with step 4 or `main`
+#   make demo    upload PO-40002 and PO-40010 through the real API -- the request returns at once
 #   make down    stop;  make reset  stop and delete the database
 #
-# Ports are shifted by one (5433, 8010) so this can run next to the full stack on `main` without
-# either one touching the other's database or port.
-name: crossexam-step4
+# Ports are shifted again (5434, 6380, 8011) so steps 4 and 5 and the full stack on `main` can all
+# exist on this machine without any of them touching another's database, broker or port.
+name: crossexam-step5
+
+x-app: &app
+  build: .
+  image: crossexam-step5:lab
+  env_file: .env
+  environment:
+    DATABASE_URL: postgresql+psycopg://crossexam:crossexam@postgres:5432/crossexam
+    REDIS_URL: redis://redis:6379/0
+    ENABLE_PGVECTOR: "0"
+    LOCAL_STORAGE_DIR: /app/data/storage
+    PYTHONPATH: /app/ladder/step5:/app
+  volumes:
+    - .:/app
+  working_dir: /app
+  depends_on:
+    postgres: { condition: service_healthy }
+    redis: { condition: service_healthy }
 
 services:
   postgres:
@@ -14,24 +31,31 @@ services:
       POSTGRES_USER: crossexam
       POSTGRES_PASSWORD: crossexam
       POSTGRES_DB: crossexam
-    ports: ["5433:5432"]
+    ports: ["5434:5432"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U crossexam"]
       interval: 3s
       retries: 20
 
+  redis:
+    image: redis:7-alpine
+    ports: ["6380:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      retries: 20
+
   api:
-    build: .
-    image: crossexam-step4:lab
-    env_file: .env
-    environment:
-      DATABASE_URL: postgresql+psycopg://crossexam:crossexam@postgres:5432/crossexam
-      ENABLE_PGVECTOR: "0"
-      PYTHONPATH: /app
-    volumes:
-      - .:/app
-    working_dir: /app
-    command: ["uvicorn", "api:app", "--app-dir", "ladder/step4", "--host", "0.0.0.0", "--port", "8000"]
-    ports: ["8010:8000"]
-    depends_on:
-      postgres: { condition: service_healthy }
+    <<: *app
+    command: ["uvicorn", "api:app", "--app-dir", "ladder/step5", "--host", "0.0.0.0", "--port", "8000"]
+    ports: ["8011:8000"]
+
+  worker-reader:
+    <<: *app
+    command: ["celery", "-A", "celery_app", "worker", "-n", "reader@%h",
+             "-Q", "reader.urgent,reader.normal,reader.bulk", "--pool", "threads", "-c", "4", "-l", "INFO"]
+
+  worker-agent:
+    <<: *app
+    command: ["celery", "-A", "celery_app", "worker", "-n", "agent@%h",
+             "-Q", "agent.urgent,agent.normal,agent.bulk", "--pool", "threads", "-c", "4", "-l", "INFO"]
