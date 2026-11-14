@@ -1,6 +1,6 @@
 # CrossExam -- Step 3: plain code around the model
 
-Step 3 of 8 in the branch-by-branch build. &larr; [Step 2](https://github.com/mayank953/crossexam-project/tree/build/step-2-three-fixes) &middot; [Map](https://github.com/mayank953/crossexam-project/tree/build/map) &middot; Step 4 (coming) &middot; [The finished system (main)](https://github.com/mayank953/crossexam-project/tree/main)
+Step 3 of 8 in the branch-by-branch build. &larr; [Step 2](https://github.com/mayank953/crossexam-project/tree/build/step-2-three-fixes) &middot; [Map](https://github.com/mayank953/crossexam-project/tree/build/map) &middot; Step 4 &middot; [The finished system (main)](https://github.com/mayank953/crossexam-project/tree/main)
 
 ## Why this step exists
 
@@ -68,7 +68,7 @@ Both match the answer key in `demo-data/ground_truth.json` exactly.
 
 ## What it still gets wrong
 
-The answer is right -- but it is a printout, on one laptop. Nobody else can see it, and nobody can approve or reject it. Papers also still arrive one at a time; month end brings thousands. `build/step-4-api-db-screen` (coming) answers the first problem; `build/step-5-queue` answers the second.
+The answer is right -- but it is a printout, on one laptop. Nobody else can see it, and nobody can approve or reject it. Papers also still arrive one at a time; month end brings thousands. `build/step-4-api-db-screen` answers the first problem; `build/step-5-queue` answers the second.
 
 ## Go deeper
 

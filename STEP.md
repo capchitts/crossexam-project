@@ -147,4 +147,4 @@ Each of those is the reason for the next steps: an API, a database and a screen 
 - **Why does a second run print the same amounts?** Every model answer is saved by the file's fingerprint (`data/cache/`). Delete that folder to start again; the first run may differ in small ways, and the checks are there for exactly that.
 - **Is this the real system?** The real system is these same modules plus a database, a queue and agents. The last branch is the real project, unchanged.
 
-Next: `git switch build/step-4-api-db-screen` (coming)
+Next: `git switch build/step-4-api-db-screen`
