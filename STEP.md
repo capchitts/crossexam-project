@@ -71,4 +71,4 @@ The same flow works from the screen: pick a role from the dropdown, press Approv
 
 ## What it still gets wrong
 
-A refused approval is not written anywhere -- only a successful decision reaches `review_actions`, so there is no record of who tried and was stopped. And once work moves through two worker pools and an agent call, there is still no way to see how much is queued, which worker is doing what, or why a batch that should take seconds is taking minutes. `build/step-7-see-inside` (coming) answers that.
+A refused approval is not written anywhere -- only a successful decision reaches `review_actions`, so there is no record of who tried and was stopped. And once work moves through two worker pools and an agent call, there is still no way to see how much is queued, which worker is doing what, or why a batch that should take seconds is taking minutes. `build/step-7-see-inside` answers that.

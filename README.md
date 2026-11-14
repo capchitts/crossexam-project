@@ -1,6 +1,6 @@
 # CrossExam -- Step 6: agents and approval
 
-Step 6 of 8 in the branch-by-branch build. &larr; [Step 5](https://github.com/mayank953/crossexam-project/tree/build/step-5-queue) &middot; [Map](https://github.com/mayank953/crossexam-project/tree/build/map) &middot; Step 7 (coming) &middot; [The finished system (main)](https://github.com/mayank953/crossexam-project/tree/main)
+Step 6 of 8 in the branch-by-branch build. &larr; [Step 5](https://github.com/mayank953/crossexam-project/tree/build/step-5-queue) &middot; [Map](https://github.com/mayank953/crossexam-project/tree/build/map) &middot; Step 7 &middot; [The finished system (main)](https://github.com/mayank953/crossexam-project/tree/main)
 
 ## Why this step exists
 
@@ -78,10 +78,10 @@ The same two calls work from the screen itself: pick a role, press Approve. `mak
 
 ## What it still gets wrong
 
-A refused approval (the 403) is not written anywhere -- only a successful decision reaches `review_actions`, so there is no record of who *tried* and was stopped. And once work is queued across two worker pools, there is still no way to see how much is queued, which worker is doing what, or why a batch is slow. `build/step-7-see-inside` (coming) answers the second; the first is closer to main's own audit design than this step goes.
+A refused approval (the 403) is not written anywhere -- only a successful decision reaches `review_actions`, so there is no record of who *tried* and was stopped. And once work is queued across two worker pools, there is still no way to see how much is queued, which worker is doing what, or why a batch is slow. `build/step-7-see-inside` answers the second; the first is closer to main's own audit design than this step goes.
 
 ## Go deeper
 
 The full walkthrough -- the agent's own prompt, the screen's live approve/reject screenshots, and why the agent can tighten but never loosen a route -- is in [`STEP.md`](STEP.md).
 
-Next: `git switch build/step-7-see-inside` (coming)
+Next: `git switch build/step-7-see-inside`
