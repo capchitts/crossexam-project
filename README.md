@@ -1,21 +1,18 @@
-# CrossExam -- Step 6: agents and approval
+# CrossExam -- Step 7: seeing inside
 
-Step 6 of 8 in the branch-by-branch build. &larr; [Step 5](https://github.com/mayank953/crossexam-project/tree/build/step-5-queue) &middot; [Map](https://github.com/mayank953/crossexam-project/tree/build/map) &middot; Step 7 (coming) &middot; [The finished system (main)](https://github.com/mayank953/crossexam-project/tree/main)
+Step 7 of 8 in the branch-by-branch build. &larr; [Step 6](https://github.com/mayank953/crossexam-project/tree/build/step-6-agents-approval) &middot; [Map](https://github.com/mayank953/crossexam-project/tree/build/map) &middot; Step 8 (coming) &middot; [The finished system (main)](https://github.com/mayank953/crossexam-project/tree/main)
 
 ## Why this step exists
 
-[Step 5](https://github.com/mayank953/crossexam-project/tree/build/step-5-queue) decided a route for every shipment (`auto_approve`, `investigate`, ...) with the same plain-code match engine steps 3-5 used. Finding a problem is not deciding what to pay, though -- a clean shipment can go straight through, but a shipment with an issue needs a plain-language explanation and a person with the right authority to say yes or no. This step answers both.
+Every step since [step 5](https://github.com/mayank953/crossexam-project/tree/build/step-5-queue) has moved work through a queue and, since [step 6](https://github.com/mayank953/crossexam-project/tree/build/step-6-agents-approval), an agent. None of it could be *seen*: no queue depth, no per-task timing, no record of what a worker just did. This step answers the plain question "is it stuck, or just busy?" with real numbers instead of a guess.
 
 ## What this step adds
 
-- **A real agent** (`ladder/step6/supervisor.py`): for any shipment that is not a clean `auto_approve`, a Gemini-backed agent -- built with main's own `app/agents/llm.py` and `app/agents/context.py` -- writes a plain-language finding, using the same `SupervisorDecision` shape (`app/schemas.py`) main's real supervisor agent returns.
-- **Code still decides, the agent can only tighten it**: the match engine's own route is never loosened by the agent, only possibly made stricter -- the same rule main's own `app/services/pipeline.py` states ("code has the last word").
-- **A real approval gate** (`POST /shipments/{id}/decide`): enforces `settings.manager_approval_threshold_inr` (`app/config.py`, &#8377;500,000) -- an `ap_executive` is refused above it, a `finance_manager` is not. Every decision is written to `review_actions`, the real audit-trail table main uses.
-- A bundle's split papers are now written as real split-child `Document` rows for the first time, carried over unchanged from step 5.
-
-## What this step does *not* rebuild
-
-main's real system has five agents (classifier, extractor, reconciler, supervisor, exception resolver), a full safety stack around every one of them (PII masking, prompt-injection guard, per-run cost ledger, a shared rate limit, a confidence gate), and a resumable LangGraph investigation thread that a person can approve hours later from any worker. This step builds the one new idea its name promises -- an agent investigates, and the right person approves -- with one agent and a direct approval route. The deeper machinery is real, and it is `main`'s own, not reinvented here smaller.
+- **Structured logs** (`app/observability/logging.py`, main's own file): every task binds its `batch_id`, `document_id` and `filename` to the logger before it does anything, so one line of JSON tells the whole story of that paper.
+- **Real metrics** (`app/observability/metrics.py`, main's own file, main's own instrument names): `crossexam_documents_processed_total`, `crossexam_packs_routed_total`, `crossexam_task_duration_seconds`. The API exposes its own at `/metrics`; each worker exposes its own on port 9100 (that split is main's own design -- see `monitoring/prometheus.yml`'s two separate scrape jobs).
+- **`GET /queues`**: the actual number of tasks waiting on each Redis queue, read directly -- the plain fact behind "is it stuck?"
+- **Flower**, always on (`http://localhost:5556`): every task's real state, worker and runtime.
+- **Prometheus and Grafana**, behind `make monitoring` (main's own compose file gates them the same way, behind `--profile monitoring`) -- the Grafana image alone is about 0.6 GB, so this step does not pull it by default.
 
 ## Where this sits
 
@@ -27,29 +24,30 @@ graph LR
     S2 --> S3[Step 3]
     S3 --> S4[Step 4]
     S4 --> S5[Step 5]
-    S5 --> S6["Step 6<br/>(you are here)"]
-    S6 -.-> S7[Step 7] -.-> S8[Step 8]
-    style S6 fill:#2459A6,stroke:#173F78,color:#fff
+    S5 --> S6[Step 6]
+    S6 --> S7["Step 7<br/>(you are here)"]
+    S7 -.-> S8[Step 8]
+    style S7 fill:#2459A6,stroke:#173F78,color:#fff
 ```
 
 ## What happens inside this step
 
 ```mermaid
-flowchart TD
-    M["Match engine decides a route<br/>(step 3e, unchanged)"] --> D{"auto_approve?"}
-    D -- yes --> AA["Shipment: auto_approved<br/>no agent call"]
-    D -- no --> AG["Supervisor agent explains<br/>(real Gemini call)"]
-    AG --> W["Shipment: awaiting_approval"]
-    W --> R{"Role vs. amount"}
-    R -- "ap_executive,<br/>above threshold" --> F["403 Forbidden"]
-    R -- "finance_manager,<br/>any amount" --> OK["Approved<br/>(review_actions row written)"]
+flowchart LR
+    T["A task runs<br/>(read_one / finalize_batch_task)"] --> L["Structured log line<br/>batch_id, document_id, filename"]
+    T --> M["Metric recorded<br/>crossexam_documents_processed_total<br/>crossexam_task_duration_seconds"]
+    M --> P[("Prometheus<br/>scrapes /metrics and :9100")]
+    P --> G["Grafana dashboard"]
+    T --> Q[("Redis queue depth")]
+    Q --> API["GET /queues"]
 ```
 
 ## Requirements
 
-- **Docker Desktop**, running, and a **Gemini key** in `.env` (same key as steps 1-5). The approval route needs no key: it is plain code.
-- Ports are shifted again (`5435`, `6381`, `8012`).
-- No new Python dependencies: the agent uses the same `langchain`/`langchain-google-genai` already installed for steps 1-3.
+- **Docker Desktop**, running, and a **Gemini key** in `.env` (same key as steps 1-6).
+- Ports are shifted again (`5436`, `6382`, `8013`, `5556` for Flower; `9101`/`9102` for the two workers' own metrics).
+- `make monitoring` downloads the Prometheus and Grafana images the first time -- roughly 0.6 GB. `make up` alone never touches them.
+- LangSmith (trace-level detail inside an agent's own run) needs its own key and was **not run** for this step; `otel_exporter` stays `none`, so no trace backend is contacted at all.
 
 ## Run it
 
@@ -57,31 +55,28 @@ flowchart TD
 make up
 make demo
 ```
-A real run gives the same two shipments as before, now with an agent's own words attached:
-```json
-{"po_number": "PO-40002", "status": "awaiting_approval", "route": "investigate",
- "payable_amount": "678300.00", "debit_note_amount": "21710.85",
- "finding": "SKU-2201: billed ₹3306.77 per carton vs PO price ₹3100.00 (6.67% higher, tolerance 2.0%). Agent: SKU-2201 price mismatch: ... (confidence 1.00)"}
-{"po_number": "PO-40010", "status": "auto_approved", "route": "auto_approve", "finding": "No issue found."}
-```
-
-### The 403, for real
-
+Real output, read straight from the running stack:
 ```bash
-curl -X POST "http://localhost:8012/shipments/<id>/decide?decision=approve&actor=priya&role=ap_executive"
-# {"detail":"ap_executive may not approve 678,300.00 -- above 500,000.00, this needs a finance_manager."}   HTTP 403
+curl http://localhost:8013/queues
+# {"reader.urgent":0,"reader.normal":0,"reader.bulk":0,"agent.urgent":0,"agent.normal":0,"agent.bulk":0}
 
-curl -X POST "http://localhost:8012/shipments/<id>/decide?decision=approve&actor=lena&role=finance_manager"
-# {"shipment_id":"...","status":"approved"}   HTTP 200
+curl http://localhost:9101/ | grep crossexam_documents
+# crossexam_documents_processed_total{doc_type="invoice",...,outcome="read"} 2.0
+# crossexam_documents_processed_total{doc_type="eway_bill",...,outcome="read"} 2.0
+# ... (11 papers from 9 files: the bundle scan alone splits into 3)
+
+curl http://localhost:9102/ | grep crossexam_packs_routed
+# crossexam_packs_routed_total{...,route="investigate"} 1.0
+# crossexam_packs_routed_total{...,route="auto_approve"} 1.0
 ```
-The same two calls work from the screen itself: pick a role, press Approve. `make down` stops the stack; `make reset` also deletes the database.
+Open **http://localhost:5556** (Flower) for the real task history -- every `read_one` and `finalize_batch_task`, which worker ran it, and how long it took. `make monitoring` then opens Prometheus at `:9091` and Grafana at `:3001`.
 
 ## What it still gets wrong
 
-A refused approval (the 403) is not written anywhere -- only a successful decision reaches `review_actions`, so there is no record of who *tried* and was stopped. And once work is queued across two worker pools, there is still no way to see how much is queued, which worker is doing what, or why a batch is slow. `build/step-7-see-inside` (coming) answers the second; the first is closer to main's own audit design than this step goes.
+A refused approval from step 6 still writes nothing anywhere, queue depth and metrics are not yet wired to alert anyone, and this step's own dashboard is the stock one copied from `main` -- nobody has looked at it with a real month-end backlog behind it. And everything so far still runs on one laptop. `build/step-8-cloud` (coming) is where that changes -- or rather, where main's own files for it are validated, since nothing in step 8 actually reaches a cloud project.
 
 ## Go deeper
 
-The full walkthrough -- the agent's own prompt, the screen's live approve/reject screenshots, and why the agent can tighten but never loosen a route -- is in [`STEP.md`](STEP.md).
+The full walkthrough -- the real metric names, a Flower screenshot, and why worker metrics and API metrics are two separate endpoints -- is in [`STEP.md`](STEP.md).
 
-Next: `git switch build/step-7-see-inside` (coming)
+Next: `git switch build/step-8-cloud` (coming)

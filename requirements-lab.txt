@@ -24,3 +24,11 @@ pydantic-settings==2.16.1
 celery[redis]==5.6.3
 redis==6.4.0
 httpx==0.28.1
+
+# Step 7: seeing inside.
+structlog==26.1.0
+opentelemetry-api==1.45.1
+opentelemetry-sdk==1.45.1
+opentelemetry-exporter-prometheus==0.66b1
+opentelemetry-instrumentation-celery==0.66b1
+flower==2.2.0

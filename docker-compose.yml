@@ -1,23 +1,26 @@
-# Step 6's stack: Postgres, Redis, one API container and two worker pools (reader, agent). The
-# agent worker is also where the new supervisor agent runs (match.py, supervisor.py).
-#   make up      build and start everything, on ports that will not clash with steps 4, 5 or `main`
-#   make demo    upload PO-40002 and PO-40010 through the real API
-#   make down    stop;  make reset  stop and delete the database
+# Step 7's stack: Postgres, Redis, the API/screen, two worker pools, and Flower (always on, it is
+# small). Prometheus and Grafana are real but opt-in -- main's own compose file gates them the same
+# way, behind `--profile monitoring`, because the Grafana image alone is about 0.6 GB.
+#   make up          build and start Postgres, Redis, the API/screen, both worker pools and Flower
+#   make monitoring  also start Prometheus and Grafana (downloads ~0.6 GB the first time)
+#   make demo        upload PO-40002 and PO-40010 through the real API
+#   make down        stop;  make reset  stop and delete the database
 #
-# Ports are shifted again (5435, 6381, 8012) so every earlier step and the full stack on `main` can
-# all exist on this machine without any of them touching another's database, broker or port.
-name: crossexam-step6
+# Ports are shifted again (5436, 6382, 8013, 5556) so every earlier step and the full stack on
+# `main` can all exist on this machine without touching one another's database, broker or port.
+name: crossexam-step7
 
 x-app: &app
   build: .
-  image: crossexam-step6:lab
+  image: crossexam-step7:lab
   env_file: .env
   environment:
     DATABASE_URL: postgresql+psycopg://crossexam:crossexam@postgres:5432/crossexam
     REDIS_URL: redis://redis:6379/0
     ENABLE_PGVECTOR: "0"
     LOCAL_STORAGE_DIR: /app/data/storage
-    PYTHONPATH: /app/ladder/step6:/app
+    PYTHONPATH: /app/ladder/step7:/app
+    METRICS_PORT: "9100"
   volumes:
     - .:/app
   working_dir: /app
@@ -32,7 +35,7 @@ services:
       POSTGRES_USER: crossexam
       POSTGRES_PASSWORD: crossexam
       POSTGRES_DB: crossexam
-    ports: ["5435:5432"]
+    ports: ["5436:5432"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U crossexam"]
       interval: 3s
@@ -40,7 +43,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    ports: ["6381:6379"]
+    ports: ["6382:6379"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 3s
@@ -48,15 +51,43 @@ services:
 
   api:
     <<: *app
-    command: ["uvicorn", "api:app", "--app-dir", "ladder/step6", "--host", "0.0.0.0", "--port", "8000"]
-    ports: ["8012:8000"]
+    command: ["uvicorn", "api:app", "--app-dir", "ladder/step7", "--host", "0.0.0.0", "--port", "8000"]
+    ports: ["8013:8000"]
 
   worker-reader:
     <<: *app
     command: ["celery", "-A", "celery_app", "worker", "-n", "reader@%h",
              "-Q", "reader.urgent,reader.normal,reader.bulk", "--pool", "threads", "-c", "4", "-l", "INFO"]
+    ports: ["9101:9100"]
 
   worker-agent:
     <<: *app
     command: ["celery", "-A", "celery_app", "worker", "-n", "agent@%h",
              "-Q", "agent.urgent,agent.normal,agent.bulk", "--pool", "threads", "-c", "4", "-l", "INFO"]
+    ports: ["9102:9100"]
+
+  flower:
+    <<: *app
+    command: ["celery", "-A", "celery_app", "flower", "--port=5555"]
+    ports: ["5556:5555"]
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    profiles: ["monitoring"]
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports: ["9091:9090"]
+    depends_on: [api]
+
+  grafana:
+    image: grafana/grafana:11.3.1
+    profiles: ["monitoring"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: crossexam
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["3001:3000"]
+    depends_on: [prometheus]
